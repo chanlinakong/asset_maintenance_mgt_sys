@@ -90,13 +90,13 @@
                     <div class="mt-3 flex flex-wrap gap-2">
 
                         <button type="submit" class="rounded-lg bg-gray-900 px-5 py-2 text-sm
-                                               font-medium text-white hover:bg-gray-800">
+                                                   font-medium text-white hover:bg-gray-800">
                             Filter
                         </button>
 
                         @if($search || $status || $type || $vehicleId)
                             <a href="{{ route('maintenance.index') }}" class="rounded-lg border border-gray-300 px-5 py-2
-                                                                               text-sm font-medium hover:bg-gray-50">
+                                                                                       text-sm font-medium hover:bg-gray-50">
                                 Clear
                             </a>
                         @endif
@@ -162,7 +162,7 @@
 
                                                 <td class="px-6 py-4">
                                                     <span class="inline-flex rounded-full bg-gray-100 px-3 py-1
-                                   text-xs font-semibold text-gray-700">
+                                                           text-xs font-semibold text-gray-700">
                                                         {{ str($maintenanceType->value)
                                 ->replace('_', ' ')
                                 ->title() }}
@@ -220,17 +220,18 @@
                                                             Edit
                                                         </a>
 
-                                                        <form method="POST" action="{{ route('maintenance.destroy', $maintenance) }}"
-                                                            onsubmit="return confirm('Are you sure you want to delete this maintenance record?')">
-                                                            @csrf
-                                                            @method('DELETE')
+                                                        @if(auth()->user()->role->value === 'admin')
+                                                            <form method="POST" action="{{ route('maintenance.destroy', $maintenance) }}"
+                                                                onsubmit="return confirm('Are you sure you want to delete this maintenance record?')">
+                                                                @csrf
+                                                                @method('DELETE')
 
-                                                            <button type="submit"
-                                                                class="rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700">
-                                                                Delete
-                                                            </button>
-                                                        </form>
-
+                                                                <button type="submit"
+                                                                    class="rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700">
+                                                                    Delete
+                                                                </button>
+                                                            </form>
+                                                        @endif
                                                     </div>
                                                 </td>
 

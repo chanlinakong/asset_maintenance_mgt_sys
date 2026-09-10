@@ -30,9 +30,11 @@
 
             <div class="flex gap-2">
 
-                <a href="{{ route('vehicles.edit', $vehicle) }}" class="rounded-lg border px-4 py-2">
-                    Edit
-                </a>
+                @if(auth()->user()->role->value === 'admin')
+                    <a href="{{ route('vehicles.edit', $vehicle) }}" class="rounded-lg border px-4 py-2">
+                        Edit
+                    </a>
+                @endif
 
                 <a href="{{ route('vehicles.index') }}" class="rounded-lg bg-gray-900 px-4 py-2 text-white">
                     Back
@@ -125,9 +127,8 @@
 
                             'bg-red-100 text-red-700' =>
                                 $vehicle->status->value === 'out_of_service',
-                        ])
-    >
-        {{ str($vehicle->status->value)
+                        ])>
+              {{ str($vehicle->status->value)
         ->replace('_', ' ')
         ->title() }}
                         </span>
@@ -376,37 +377,60 @@
 
             @else
 
-            <div class="px-6 py-10 text-center">
+                    <div class="px-6 py-10 text-center">
 
-                <div class="text-4xl">
-                    🔧
-                </div>
+                        <div class="text-4xl">
+                            🔧
+                        </div>
 
-                <h3 class="mt-3 font-semibold text-gray-900">
-                    No Maintenance Records
-                </h3>
+                        <h3 class="mt-3 font-semibold text-gray-900">
+                            No Maintenance Records
+                        </h3>
 
-                <p class="mx-auto mt-1 max-w-md text-sm text-gray-500">
-                    No maintenance has been reported for
-                    {{ $vehicle->vehicle_code }} yet.
-                </p>
+                        <p class="mx-auto mt-1 max-w-md text-sm text-gray-500">
+                            No maintenance has been reported for
+                            {{ $vehicle->vehicle_code }} yet.
+                        </p>
 
-                <a
-                    href="{{ route('maintenance.create', [
-                        'vehicle_id' => $vehicle->id
-                    ]) }}"
-                    class="mt-4 inline-block rounded-lg bg-gray-900 px-4 py-2
-                        text-sm font-medium text-white hover:bg-gray-800"
-                >
-                    + Report Maintenance
-                </a>
+                        <a href="{{ route('maintenance.create', [
+                    'vehicle_id' => $vehicle->id
+                ]) }}" class="mt-4 inline-block rounded-lg bg-gray-900 px-4 py-2
+                                                text-sm font-medium text-white hover:bg-gray-800">
+                            + Report Maintenance
+                        </a>
 
-            </div>
+                    </div>
 
             @endif
 
         </div>
 
     </div>
+
+    @if(auth()->user()->role->value === 'admin')
+        <div class="rounded-xl border border-red-200 bg-white p-6">
+
+            <h2 class="font-semibold text-red-700">
+                Remove Vehicle
+            </h2>
+
+            <p class="mt-1 text-sm text-gray-500">
+                This vehicle will be removed from active records.
+            </p>
+
+            <form method="POST" action="{{ route('vehicles.destroy', $vehicle) }}" class="mt-4"
+                onsubmit="return confirm('Are you sure you want to remove this vehicle?')">
+
+                @csrf
+                @method('DELETE')
+
+                <button type="submit" class="rounded-lg bg-red-600 px-4 py-2 text-white">
+                    Remove Vehicle
+                </button>
+
+            </form>
+
+        </div>
+    @endif
 
 @endsection

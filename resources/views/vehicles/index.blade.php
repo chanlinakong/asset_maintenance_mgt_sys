@@ -18,9 +18,12 @@
                 </p>
             </div>
 
-            <a href="{{ route('vehicles.create') }}" class="rounded-lg bg-gray-900 px-4 py-2 text-center text-white">
-                + Add Vehicle
-            </a>
+            @if(auth()->user()->role->value === 'admin')
+                <a href="{{ route('vehicles.create') }}"
+                    class="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800">
+                    + Add Vehicle
+                </a>
+            @endif
 
         </div>
 
@@ -41,8 +44,8 @@
 
                         <input type="search" name="search" value="{{ $search }}"
                             placeholder="Search by code, name, type, brand..." class="w-full rounded-lg border border-gray-300 px-4 py-2
-                               focus:border-gray-500 focus:outline-none
-                               sm:max-w-md">
+                                       focus:border-gray-500 focus:outline-none
+                                       sm:max-w-md">
 
                         <select name="status" class="rounded-lg border border-gray-300 px-4 py-2">
                             <option value="">All Statuses</option>
@@ -57,13 +60,13 @@
                         </select>
 
                         <button type="submit" class="rounded-lg bg-gray-900 px-5 py-2 text-white
-                               hover:bg-gray-800">
+                                       hover:bg-gray-800">
                             Search
                         </button>
 
                         @if($search)
                             <a href="{{ route('vehicles.index') }}" class="rounded-lg border border-gray-300 px-5 py-2
-                                               text-center hover:bg-gray-50">
+                                                               text-center hover:bg-gray-50">
                                 Clear
                             </a>
                         @endif
@@ -150,10 +153,22 @@
                                             View
                                         </a>
 
-                                        <a href="{{ route('vehicles.edit', $vehicle) }}" class="rounded-lg border px-3 py-1.5">
-                                            Edit
-                                        </a>
+                                        @if(auth()->user()->role->value === 'admin')
+                                            <a href="{{ route('vehicles.edit', $vehicle) }}" class="rounded-lg border px-3 py-1.5">
+                                                Edit
+                                            </a>
 
+                                            <form method="POST" action="{{ route('vehicles.destroy', $vehicle) }}"
+                                                onsubmit="return confirm('Are you sure you want to delete this vehicle?');">
+                                                @csrf
+                                                @method('DELETE')
+
+                                                <button type="submit"
+                                                    class="rounded-lg border px-3 py-1.5 text-red-600 hover:bg-red-50">
+                                                    Delete
+                                                </button>
+                                            </form>
+                                        @endif
                                     </div>
 
                                 </td>
@@ -185,27 +200,4 @@
 
     </div>
 
-    <div class="rounded-xl border border-red-200 bg-white p-6">
-
-        <h2 class="font-semibold text-red-700">
-            Remove Vehicle
-        </h2>
-
-        <p class="mt-1 text-sm text-gray-500">
-            This vehicle will be removed from active records.
-        </p>
-
-        <form method="POST" action="{{ route('vehicles.destroy', $vehicle) }}" class="mt-4"
-            onsubmit="return confirm('Are you sure you want to remove this vehicle?')">
-
-            @csrf
-            @method('DELETE')
-
-            <button type="submit" class="rounded-lg bg-red-600 px-4 py-2 text-white">
-                Remove Vehicle
-            </button>
-
-        </form>
-
-    </div>
 @endsection

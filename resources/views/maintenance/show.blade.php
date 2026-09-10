@@ -47,18 +47,18 @@
                     class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
                     Edit
                 </a>
+                @if(auth()->user()->role->value === 'admin')
+                    <form method="POST" action="{{ route('maintenance.destroy', $maintenance) }}"
+                        onsubmit="return confirm('Are you sure you want to delete this maintenance record?')">
+                        @csrf
+                        @method('DELETE')
 
-                <form method="POST" action="{{ route('maintenance.destroy', $maintenance) }}"
-                    onsubmit="return confirm('Are you sure you want to delete this maintenance record?')">
-                    @csrf
-                    @method('DELETE')
-
-                    <button type="submit"
-                        class="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700">
-                        Delete
-                    </button>
-                </form>
-
+                        <button type="submit"
+                            class="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700">
+                            Delete
+                        </button>
+                    </form>
+                @endif
                 <a href="{{ route('maintenance.index') }}" class="rounded-lg bg-gray-900 px-4 py-2 text-white">
                     Back
                 </a>
