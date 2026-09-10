@@ -40,6 +40,70 @@
 
             <div class="overflow-x-auto">
 
+                <form method="GET" action="{{ route('maintenance.index') }}" class="mb-6 rounded-xl bg-white p-4 shadow-sm">
+                    <div class="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
+
+                        {{-- Search --}}
+                        <input type="search" name="search" value="{{ $search }}" placeholder="Search maintenance..."
+                            class="rounded-lg border border-gray-300 px-4 py-2">
+
+                        {{-- Vehicle --}}
+                        <select name="vehicle_id" class="rounded-lg border border-gray-300 px-4 py-2">
+                            <option value="">All Vehicles</option>
+
+                            @foreach($vehicles as $vehicle)
+                                <option value="{{ $vehicle->id }}" @selected($vehicleId == $vehicle->id)>
+                                    {{ $vehicle->vehicle_code }}
+                                    — {{ $vehicle->name }}
+                                </option>
+                            @endforeach
+                        </select>
+
+                        {{-- Type --}}
+                        <select name="type" class="rounded-lg border border-gray-300 px-4 py-2">
+                            <option value="">All Types</option>
+
+                            @foreach($types as $maintenanceType)
+                                                <option value="{{ $maintenanceType->value }}" @selected($type === $maintenanceType->value)>
+                                                    {{ str($maintenanceType->value)
+                                ->replace('_', ' ')
+                                ->title() }}
+                                                </option>
+                            @endforeach
+                        </select>
+
+                        {{-- Status --}}
+                        <select name="status" class="rounded-lg border border-gray-300 px-4 py-2">
+                            <option value="">All Statuses</option>
+
+                            @foreach($statuses as $maintenanceStatus)
+                                                <option value="{{ $maintenanceStatus->value }}" @selected($status === $maintenanceStatus->value)>
+                                                    {{ str($maintenanceStatus->value)
+                                ->replace('_', ' ')
+                                ->title() }}
+                                                </option>
+                            @endforeach
+                        </select>
+
+                    </div>
+
+                    <div class="mt-3 flex flex-wrap gap-2">
+
+                        <button type="submit" class="rounded-lg bg-gray-900 px-5 py-2 text-sm
+                                               font-medium text-white hover:bg-gray-800">
+                            Filter
+                        </button>
+
+                        @if($search || $status || $type || $vehicleId)
+                            <a href="{{ route('maintenance.index') }}" class="rounded-lg border border-gray-300 px-5 py-2
+                                                                               text-sm font-medium hover:bg-gray-50">
+                                Clear
+                            </a>
+                        @endif
+
+                    </div>
+                </form>
+
                 <table class="min-w-full text-left text-sm">
 
                     <thead class="bg-gray-50">
@@ -92,17 +156,43 @@
                                                 <td class="px-6 py-4">
                                                     {{ $maintenance->title }}
                                                 </td>
+                                                @php
+                                                    $maintenanceType = $maintenance->type;
+                                                @endphp
 
                                                 <td class="px-6 py-4">
-                                                    {{ str($maintenance->type->value)
+                                                    <span class="inline-flex rounded-full bg-gray-100 px-3 py-1
+                                   text-xs font-semibold text-gray-700">
+                                                        {{ str($maintenanceType->value)
                                 ->replace('_', ' ')
                                 ->title() }}
+                                                    </span>
                                                 </td>
 
+                                                @php
+                                                    $maintenanceStatus = $maintenance->status;
+                                                @endphp
+
                                                 <td class="px-6 py-4">
-                                                    {{ str($maintenance->status->value)
+                                                    <span @class([
+                                                        'inline-flex rounded-full px-3 py-1 text-xs font-semibold',
+
+                                                        'bg-yellow-100 text-yellow-700' =>
+                                                            $maintenanceStatus->value === 'pending',
+
+                                                        'bg-blue-100 text-blue-700' =>
+                                                            $maintenanceStatus->value === 'in_progress',
+
+                                                        'bg-green-100 text-green-700' =>
+                                                            $maintenanceStatus->value === 'completed',
+
+                                                        'bg-red-100 text-red-700' =>
+                                                            $maintenanceStatus->value === 'cancelled',
+                                                    ])>
+                                                        {{ str($maintenanceStatus->value)
                                 ->replace('_', ' ')
                                 ->title() }}
+                                                    </span>
                                                 </td>
 
                                                 <td class="px-6 py-4">

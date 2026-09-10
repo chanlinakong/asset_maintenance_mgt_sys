@@ -13,13 +13,18 @@
 
             @php
                 $maintenance = $maintenance ?? null;
+                $selectedVehicle = $selectedVehicle ?? null;
             @endphp
 
             @foreach($vehicles as $vehicle)
                 <option value="{{ $vehicle->id }}" @selected(
                     old(
                         'vehicle_id',
-                        data_get($maintenance, 'vehicle_id', '')
+                        data_get(
+                            $maintenance,
+                            'vehicle_id',
+                            data_get($selectedVehicle, 'id', '')
+                        )
                     ) == $vehicle->id
                 )>
                     {{ $vehicle->vehicle_code }}

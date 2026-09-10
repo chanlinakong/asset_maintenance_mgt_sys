@@ -10,36 +10,124 @@ use App\Http\Requests\StoreMaintenanceRecordRequest;
 use App\Http\Requests\UpdateMaintenanceRecordRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
+use Illuminate\Http\Request;
+use App\Enums\VehicleStatus;
 
 class MaintenanceRecordController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $maintenanceRecords = MaintenanceRecord::with('vehicle')
-            ->latest('reported_at')
-            ->paginate(10);
+        $search = $request->string('search')->trim()->toString();
 
-        return view(
-            'maintenance.index',
-            compact('maintenanceRecords')
-        );
+        $status = $request->string('status')->trim()->toString();
+
+        $type = $request->string('type')->trim()->toString();
+
+        $vehicleId = $request->integer('vehicle_id');
+
+        $maintenanceRecords = MaintenanceRecord::query()
+            ->with('vehicle')
+
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('title', 'like', "%{$search}%")
+                        ->orWhere(
+                            'description',
+                            'like',
+                            "%{$search}%"
+                        )
+                        ->orWhere(
+                            'service_provider',
+                            'like',
+                            "%{$search}%"
+                        )
+                        ->orWhereHas('vehicle', function ($query) use ($search) {
+                            $query->where(
+                                'vehicle_code',
+                                'like',
+                                "%{$search}%"
+                            )
+                                ->orWhere(
+                                    'name',
+                                    'like',
+                                    "%{$search}%"
+                                );
+                        });
+                });
+            })
+
+            ->when($status, function ($query) use ($status) {
+                $query->where('status', $status);
+            })
+
+            ->when($type, function ($query) use ($type) {
+                $query->where('type', $type);
+            })
+
+            ->when($vehicleId, function ($query) use ($vehicleId) {
+                $query->where('vehicle_id', $vehicleId);
+            })
+
+            ->latest('reported_at')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('maintenance.index', [
+            'maintenanceRecords' => $maintenanceRecords,
+            'search' => $search,
+            'status' => $status,
+            'type' => $type,
+            'vehicleId' => $vehicleId,
+            'statuses' => MaintenanceStatus::cases(),
+            'types' => MaintenanceType::cases(),
+            'vehicles' => Vehicle::orderBy('vehicle_code')->get(),
+        ]);
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
+        $vehicleId = $request->integer('vehicle_id');
+
+        $vehicle = $vehicleId
+            ? Vehicle::find($vehicleId)
+            : null;
+
         return view('maintenance.create', [
             'vehicles' => Vehicle::orderBy('vehicle_code')->get(),
             'types' => MaintenanceType::cases(),
             'statuses' => MaintenanceStatus::cases(),
+            'selectedVehicle' => $vehicle,
         ]);
     }
 
     public function store(
         StoreMaintenanceRecordRequest $request
     ): RedirectResponse {
-        MaintenanceRecord::create(
-            $request->validated()
-        );
+        $data = $request->validated();
+
+        $maintenance = MaintenanceRecord::create($data);
+
+        if ($maintenance->status === MaintenanceStatus::InProgress) {
+            $maintenance->vehicle->update([
+                'status' => VehicleStatus::Maintenance,
+            ]);
+        }
+
+        if (
+            in_array($maintenance->status, [
+                MaintenanceStatus::Completed,
+                MaintenanceStatus::Cancelled,
+            ], true)
+        ) {
+            if (
+                $maintenance->vehicle->status
+                === VehicleStatus::Maintenance
+            ) {
+                $maintenance->vehicle->update([
+                    'status' => VehicleStatus::Active,
+                ]);
+            }
+        }
 
         return redirect()
             ->route('maintenance.index')
@@ -75,9 +163,33 @@ class MaintenanceRecordController extends Controller
         UpdateMaintenanceRecordRequest $request,
         MaintenanceRecord $maintenance
     ): RedirectResponse {
-        $maintenance->update(
-            $request->validated()
-        );
+        $data = $request->validated();
+
+        $maintenance->update($data);
+
+        $maintenance->load('vehicle');
+
+        if ($maintenance->status === MaintenanceStatus::InProgress) {
+            $maintenance->vehicle->update([
+                'status' => VehicleStatus::Maintenance,
+            ]);
+        }
+
+        if (
+            in_array($maintenance->status, [
+                MaintenanceStatus::Completed,
+                MaintenanceStatus::Cancelled,
+            ], true)
+        ) {
+            if (
+                $maintenance->vehicle->status
+                === VehicleStatus::Maintenance
+            ) {
+                $maintenance->vehicle->update([
+                    'status' => VehicleStatus::Active,
+                ]);
+            }
+        }
 
         return redirect()
             ->route('maintenance.show', $maintenance)

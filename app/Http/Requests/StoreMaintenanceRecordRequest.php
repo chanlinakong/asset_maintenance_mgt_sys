@@ -52,12 +52,16 @@ class StoreMaintenanceRecordRequest extends FormRequest
                 'nullable',
                 'date',
                 'after_or_equal:reported_at',
+                'required_if:status,in_progress,completed',
+                'prohibited_if:status,pending,cancelled',
             ],
 
             'completed_at' => [
                 'nullable',
                 'date',
                 'after_or_equal:started_at',
+                'required_if:status,completed',
+                'prohibited_if:status,pending,cancelled',
             ],
 
             'cost' => [
