@@ -36,6 +36,41 @@
 
             <div class="overflow-x-auto">
 
+                <form method="GET" action="{{ route('vehicles.index') }}" class="mb-6">
+                    <div class="flex flex-col gap-3 sm:flex-row">
+
+                        <input type="search" name="search" value="{{ $search }}"
+                            placeholder="Search by code, name, type, brand..." class="w-full rounded-lg border border-gray-300 px-4 py-2
+                               focus:border-gray-500 focus:outline-none
+                               sm:max-w-md">
+
+                        <select name="status" class="rounded-lg border border-gray-300 px-4 py-2">
+                            <option value="">All Statuses</option>
+
+                            @foreach($statuses as $vehicleStatus)
+                                                <option value="{{ $vehicleStatus->value }}" @selected($status === $vehicleStatus->value)>
+                                                    {{ str($vehicleStatus->value)
+                                ->replace('_', ' ')
+                                ->title() }}
+                                                </option>
+                            @endforeach
+                        </select>
+
+                        <button type="submit" class="rounded-lg bg-gray-900 px-5 py-2 text-white
+                               hover:bg-gray-800">
+                            Search
+                        </button>
+
+                        @if($search)
+                            <a href="{{ route('vehicles.index') }}" class="rounded-lg border border-gray-300 px-5 py-2
+                                               text-center hover:bg-gray-50">
+                                Clear
+                            </a>
+                        @endif
+
+                    </div>
+                </form>
+
                 <table class="min-w-full text-left text-sm">
 
                     <thead class="bg-gray-50">
@@ -70,47 +105,60 @@
 
                         @forelse($vehicles as $vehicle)
 
-                                        <tr>
+                            <tr>
 
-                                            <td class="px-6 py-4 font-medium">
-                                                {{ $vehicle->vehicle_code }}
-                                            </td>
+                                <td class="px-6 py-4 font-medium">
+                                    {{ $vehicle->vehicle_code }}
+                                </td>
 
-                                            <td class="px-6 py-4">
-                                                {{ $vehicle->name }}
-                                            </td>
+                                <td class="px-6 py-4">
+                                    {{ $vehicle->name }}
+                                </td>
 
-                                            <td class="px-6 py-4">
-                                                {{ $vehicle->type }}
-                                            </td>
+                                <td class="px-6 py-4">
+                                    {{ $vehicle->type }}
+                                </td>
 
-                                            <td class="px-6 py-4">
-                                                {{ $vehicle->registration_number ?? '-' }}
-                                            </td>
+                                <td class="px-6 py-4">
+                                    {{ $vehicle->registration_number ?? '-' }}
+                                </td>
 
-                                            <td class="px-6 py-4">
-                                                {{ str($vehicle->status->value)
-                            ->replace('_', ' ')
-                            ->title() }}
-                                            </td>
+                                @php
+                                    $status = $vehicle->status;
+                                @endphp
 
-                                            <td class="px-6 py-4">
 
-                                                <div class="flex justify-end gap-2">
+                                <td class="px-6 py-4">
+                                    <span @class([
+                                        'inline-flex rounded-full px-3 py-1 text-xs font-semibold',
+                                        'bg-green-100 text-green-700' =>
+                                            $status->value === 'active',
+                                        'bg-yellow-100 text-yellow-700' =>
+                                            $status->value === 'maintenance',
+                                        'bg-red-100 text-red-700' =>
+                                            $status->value === 'out_of_service',
+                                    ])>
+                                        {{ str($status->value)->replace('_', ' ')->title() }}
+                                    </span>
+                                </td>
 
-                                                    <a href="{{ route('vehicles.show', $vehicle) }}" class="rounded-lg border px-3 py-1.5">
-                                                        View
-                                                    </a>
+                                <td class="px-6 py-4">
 
-                                                    <a href="{{ route('vehicles.edit', $vehicle) }}" class="rounded-lg border px-3 py-1.5">
-                                                        Edit
-                                                    </a>
+                                    <div class="flex justify-end gap-2">
 
-                                                </div>
+                                        <a href="{{ route('vehicles.show', $vehicle) }}" class="rounded-lg border px-3 py-1.5">
+                                            View
+                                        </a>
 
-                                            </td>
+                                        <a href="{{ route('vehicles.edit', $vehicle) }}" class="rounded-lg border px-3 py-1.5">
+                                            Edit
+                                        </a>
 
-                                        </tr>
+                                    </div>
+
+                                </td>
+
+                            </tr>
 
                         @empty
 

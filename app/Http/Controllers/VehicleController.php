@@ -8,16 +8,44 @@ use App\Http\Requests\UpdateVehicleRequest;
 use App\Models\Vehicle;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
+use Illuminate\Http\Request;
 
 class VehicleController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $vehicles = Vehicle::query()
-            ->latest()
-            ->paginate(10);
+        $search = $request->string('search')->trim()->toString();
 
-        return view('vehicles.index', compact('vehicles'));
+        $status = $request->string('status')->trim()->toString();
+
+        $vehicles = Vehicle::query()
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('vehicle_code', 'like', "%{$search}%")
+                        ->orWhere('name', 'like', "%{$search}%")
+                        ->orWhere('type', 'like', "%{$search}%")
+                        ->orWhere('brand', 'like', "%{$search}%")
+                        ->orWhere('model', 'like', "%{$search}%")
+                        ->orWhere(
+                            'registration_number',
+                            'like',
+                            "%{$search}%"
+                        );
+                });
+            })
+            ->when($status, function ($query) use ($status) {
+                $query->where('status', $status);
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('vehicles.index', [
+            'vehicles' => $vehicles,
+            'search' => $search,
+            'status' => $status,
+            'statuses' => VehicleStatus::cases(),
+        ]);
     }
 
     public function create(): View
