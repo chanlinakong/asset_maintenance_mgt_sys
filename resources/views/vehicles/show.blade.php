@@ -114,11 +114,23 @@
                             Status
                         </p>
 
-                        <p class="font-medium">
-                            {{ str($vehicle->status->value)
+                        <span @class([
+                            'inline-flex rounded-full px-3 py-1 text-xs font-semibold',
+
+                            'bg-green-100 text-green-700' =>
+                                $vehicle->status->value === 'active',
+
+                            'bg-yellow-100 text-yellow-700' =>
+                                $vehicle->status->value === 'maintenance',
+
+                            'bg-red-100 text-red-700' =>
+                                $vehicle->status->value === 'out_of_service',
+                        ])
+    >
+        {{ str($vehicle->status->value)
         ->replace('_', ' ')
         ->title() }}
-                        </p>
+                        </span>
                     </div>
 
 
@@ -177,40 +189,21 @@
 
             @if($vehicle->maintenanceRecords->isNotEmpty())
 
-                <div class="overflow-x-auto">
+                {{-- Desktop Table --}}
+                <div class="hidden overflow-x-auto md:block">
 
                     <table class="w-full min-w-[700px] text-left text-sm">
 
                         <thead class="border-b bg-gray-50 text-xs uppercase text-gray-500">
-
                             <tr>
-                                <th class="px-6 py-3">
-                                    Reported
-                                </th>
-
-                                <th class="px-6 py-3">
-                                    Maintenance
-                                </th>
-
-                                <th class="px-6 py-3">
-                                    Type
-                                </th>
-
-                                <th class="px-6 py-3">
-                                    Status
-                                </th>
-
-                                <th class="px-6 py-3">
-                                    Cost
-                                </th>
-
-                                <th class="px-6 py-3">
-                                    Action
-                                </th>
+                                <th class="px-6 py-3">Reported</th>
+                                <th class="px-6 py-3">Maintenance</th>
+                                <th class="px-6 py-3">Type</th>
+                                <th class="px-6 py-3">Status</th>
+                                <th class="px-6 py-3">Cost</th>
+                                <th class="px-6 py-3">Action</th>
                             </tr>
-
                         </thead>
-
 
                         <tbody class="divide-y">
 
@@ -222,28 +215,21 @@
                                                 {{ $maintenance->reported_at->format('d M Y H:i') }}
                                             </td>
 
-
                                             <td class="px-6 py-4">
-
                                                 <a href="{{ route('maintenance.show', $maintenance) }}"
                                                     class="font-medium text-blue-600 hover:underline">
                                                     {{ $maintenance->title }}
                                                 </a>
-
                                             </td>
 
-
                                             <td class="px-6 py-4">
-
                                                 <span
                                                     class="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">
                                                     {{ str($maintenance->type->value)
                                 ->replace('_', ' ')
                                 ->title() }}
                                                 </span>
-
                                             </td>
-
 
                                             <td class="px-6 py-4">
 
@@ -273,19 +259,15 @@
 
                                             </td>
 
-
                                             <td class="whitespace-nowrap px-6 py-4 font-medium">
                                                 ${{ number_format((float) $maintenance->cost, 2) }}
                                             </td>
 
-
                                             <td class="px-6 py-4">
-
                                                 <a href="{{ route('maintenance.show', $maintenance) }}"
                                                     class="font-medium text-blue-600 hover:underline">
                                                     View
                                                 </a>
-
                                             </td>
 
                                         </tr>
@@ -298,28 +280,128 @@
 
                 </div>
 
-            @else
 
-                <div class="px-6 py-10 text-center">
+                {{-- Mobile Cards --}}
+                <div class="space-y-4 p-4 md:hidden">
 
-                    <div class="text-4xl">
-                        🔧
-                    </div>
+                    @foreach($vehicle->maintenanceRecords as $maintenance)
 
-                    <h3 class="mt-3 font-semibold text-gray-900">
-                        No Maintenance Records
-                    </h3>
+                        <div class="rounded-xl border border-gray-200 p-4">
 
-                    <p class="mt-1 text-sm text-gray-500">
-                        This vehicle does not have any maintenance records yet.
-                    </p>
+                            <div class="flex items-start justify-between gap-3">
 
-                    <a href="{{ route('maintenance.create', ['vehicle_id' => $vehicle->id]) }}"
-                        class="mt-4 inline-block rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800">
-                        Report Maintenance
-                    </a>
+                                <div>
+
+                                    <a href="{{ route('maintenance.show', $maintenance) }}"
+                                        class="font-semibold text-blue-600 hover:underline">
+                                        {{ $maintenance->title }}
+                                    </a>
+
+                                    <p class="mt-1 text-xs text-gray-500">
+                                        {{ $maintenance->reported_at->format('d M Y H:i') }}
+                                    </p>
+
+                                </div>
+
+
+                                @php
+                                    $maintenanceStatus = $maintenance->status;
+                                @endphp
+
+                                <span @class([
+                                    'shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold',
+
+                                    'bg-yellow-100 text-yellow-700' =>
+                                        $maintenanceStatus->value === 'pending',
+
+                                    'bg-blue-100 text-blue-700' =>
+                                        $maintenanceStatus->value === 'in_progress',
+
+                                    'bg-green-100 text-green-700' =>
+                                        $maintenanceStatus->value === 'completed',
+
+                                    'bg-red-100 text-red-700' =>
+                                        $maintenanceStatus->value === 'cancelled',
+                                ])>
+                                    {{ str($maintenanceStatus->value)
+                        ->replace('_', ' ')
+                        ->title() }}
+                                </span>
+
+                            </div>
+
+
+                            <div class="mt-4 grid grid-cols-2 gap-4 text-sm">
+
+                                <div>
+                                    <p class="text-xs text-gray-500">
+                                        Type
+                                    </p>
+
+                                    <p class="mt-1 font-medium">
+                                        {{ str($maintenance->type->value)
+                        ->replace('_', ' ')
+                        ->title() }}
+                                    </p>
+                                </div>
+
+
+                                <div>
+                                    <p class="text-xs text-gray-500">
+                                        Cost
+                                    </p>
+
+                                    <p class="mt-1 font-medium">
+                                        ${{ number_format((float) $maintenance->cost, 2) }}
+                                    </p>
+                                </div>
+
+                            </div>
+
+
+                            <div class="mt-4 border-t pt-3">
+
+                                <a href="{{ route('maintenance.show', $maintenance) }}"
+                                    class="text-sm font-medium text-blue-600 hover:underline">
+                                    View Maintenance →
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    @endforeach
 
                 </div>
+
+            @else
+
+            <div class="px-6 py-10 text-center">
+
+                <div class="text-4xl">
+                    🔧
+                </div>
+
+                <h3 class="mt-3 font-semibold text-gray-900">
+                    No Maintenance Records
+                </h3>
+
+                <p class="mx-auto mt-1 max-w-md text-sm text-gray-500">
+                    No maintenance has been reported for
+                    {{ $vehicle->vehicle_code }} yet.
+                </p>
+
+                <a
+                    href="{{ route('maintenance.create', [
+                        'vehicle_id' => $vehicle->id
+                    ]) }}"
+                    class="mt-4 inline-block rounded-lg bg-gray-900 px-4 py-2
+                        text-sm font-medium text-white hover:bg-gray-800"
+                >
+                    + Report Maintenance
+                </a>
+
+            </div>
 
             @endif
 
