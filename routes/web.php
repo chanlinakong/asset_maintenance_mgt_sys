@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MaintenanceRecordController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\Route;
 
@@ -19,6 +20,16 @@ Route::middleware(['auth', 'role:admin,staff'])->group(function () {
         DashboardController::class,
         'index',
     ])->name('dashboard');
+
+    Route::get('/reports', [
+        ReportController::class,
+        'index',
+    ])->name('reports.index');
+
+    Route::get('/reports/pdf', [
+        ReportController::class,
+        'pdf',
+    ])->name('reports.pdf');
 
 });
 
@@ -60,9 +71,9 @@ Route::middleware(['auth', 'role:admin,staff'])->group(function () {
         'maintenance',
         MaintenanceRecordController::class
     )->parameters([
-        'maintenance' => 'maintenance',
-    ]);
+                'maintenance' => 'maintenance',
+            ]);
 
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

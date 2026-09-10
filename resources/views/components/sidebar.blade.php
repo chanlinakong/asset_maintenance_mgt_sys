@@ -31,7 +31,7 @@
             </a>
 
             {{-- Reports --}}
-            <a href="#" class="block rounded-lg px-4 py-3 font-medium hover:bg-gray-100">
+            <a href="{{ route('reports.index') }}" class="block rounded-lg px-4 py-3 font-medium hover:bg-gray-100">
                 📈 Reports
             </a>
 
