@@ -9,6 +9,10 @@ Route::get('/', function () {
     return redirect()->route('dashboard');
 });
 
+Route::get('/offline', function () {
+    return view('offline');
+})->name('offline');
+
 Route::middleware(['auth', 'role:admin,staff'])->group(function () {
 
     Route::get('/dashboard', [

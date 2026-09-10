@@ -17,6 +17,11 @@
         {{-- User area --}}
         <div class="flex items-center gap-3">
 
+            <button x-show="canInstall" x-cloak @click="installApp" type="button"
+                class="rounded-lg px-3 py-2 text-sm font-medium hover:bg-gray-100">
+                📱 Install
+            </button>
+
             <button type="button" class="rounded-lg p-2 hover:bg-gray-100">
                 🔔
             </button>

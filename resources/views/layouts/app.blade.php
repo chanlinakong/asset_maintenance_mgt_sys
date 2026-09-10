@@ -1,12 +1,22 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
     <meta charset="utf-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="theme-color" content="#111827">
+
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+    <meta name="apple-mobile-web-app-title" content="Vehicle Maintenance">
+
+    <link rel="apple-touch-icon" href="{{ asset('icons/icon-192.png') }}">
 
     <title>
         @yield('title', 'Asset Maintenance')
@@ -17,18 +27,40 @@
 
 <body class="bg-gray-100 text-gray-900">
 
-    <div
-        x-data="{ sidebarOpen: false }"
-        class="min-h-screen"
-    >
+    <div x-data="{
+        sidebarOpen: false,
+        canInstall: false,
+        deferredPrompt: null,
+
+        installApp() {
+            if (!this.deferredPrompt) {
+                return;
+            }
+
+            this.deferredPrompt.prompt();
+
+            this.deferredPrompt.userChoice.then(() => {
+                this.deferredPrompt = null;
+                this.canInstall = false;
+            });
+        }
+    }" x-init="
+        window.addEventListener('beforeinstallprompt', (event) => {
+            event.preventDefault();
+
+            deferredPrompt = event;
+            canInstall = true;
+        });
+
+        window.addEventListener('appinstalled', () => {
+            canInstall = false;
+            deferredPrompt = null;
+        });
+    " class="min-h-screen">
 
         {{-- Mobile overlay --}}
-        <div
-            x-show="sidebarOpen"
-            x-transition.opacity
-            @click="sidebarOpen = false"
-            class="fixed inset-0 z-40 bg-black/50 lg:hidden"
-        ></div>
+        <div x-show="sidebarOpen" x-transition.opacity @click="sidebarOpen = false"
+            class="fixed inset-0 z-40 bg-black/50 lg:hidden"></div>
 
         {{-- Sidebar --}}
         <x-sidebar />
@@ -48,4 +80,5 @@
     </div>
 
 </body>
+
 </html>
