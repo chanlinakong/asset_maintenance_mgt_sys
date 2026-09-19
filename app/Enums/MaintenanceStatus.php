@@ -37,4 +37,29 @@ enum MaintenanceStatus: string
             self::Cancelled => false,
         };
     }
+
+    public function allowedNextStatuses(): array
+    {
+        return match ($this) {
+            self::Pending => [
+                self::Pending,
+                self::InProgress,
+                self::Cancelled,
+            ],
+
+            self::InProgress => [
+                self::InProgress,
+                self::Completed,
+                self::Cancelled,
+            ],
+
+            self::Completed => [
+                self::Completed,
+            ],
+
+            self::Cancelled => [
+                self::Cancelled,
+            ],
+        };
+    }
 }

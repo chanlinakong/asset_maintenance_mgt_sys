@@ -89,16 +89,18 @@
 
     {{-- Status --}}
     <div>
-        <label class="mb-2 block text-sm font-medium">
+        <label for="status" class="block text-sm font-medium text-gray-700">
             Status
         </label>
 
-        <select name="status" class="w-full rounded-lg border border-gray-300 px-3 py-2">
+        <select name="status" id="status"
+            class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500"
+            required>
             @foreach($statuses as $status)
                     <option value="{{ $status->value }}" @selected(
                         old(
                             'status',
-                            data_get($maintenance, 'status.value', 'pending')
+                            $maintenance->status->value ?? 'pending'
                         ) === $status->value
                     )>
                         {{ str($status->value)

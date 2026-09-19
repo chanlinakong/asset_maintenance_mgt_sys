@@ -137,7 +137,8 @@ class MaintenanceRecordController extends Controller
             'maintenance' => $maintenance,
             'vehicles' => Vehicle::orderBy('vehicle_code')->get(),
             'types' => MaintenanceType::cases(),
-            'statuses' => MaintenanceStatus::cases(),
+            'statuses' => $maintenance->status
+            ->allowedNextStatuses(),
         ]);
     }
 

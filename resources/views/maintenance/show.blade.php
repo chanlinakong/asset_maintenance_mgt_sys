@@ -4,6 +4,64 @@
 
 @section('content')
 
+    <div class="mt-6 rounded-xl border border-gray-200 bg-white p-6">
+
+        <h2 class="text-lg font-semibold text-gray-900">
+            Maintenance Workflow
+        </h2>
+
+        <div class="mt-6 flex flex-wrap items-center gap-2">
+
+            @php
+                $workflow = [
+                    \App\Enums\MaintenanceStatus::Pending,
+                    \App\Enums\MaintenanceStatus::InProgress,
+                    \App\Enums\MaintenanceStatus::Completed,
+                ];
+            @endphp
+
+            @foreach($workflow as $status)
+                <div @class([
+                    'rounded-full px-4 py-2 text-sm font-medium',
+
+                    'bg-gray-900 text-white' =>
+                        $maintenance->status === $status,
+
+                    'bg-green-100 text-green-700' =>
+                        $maintenance->status !== $status
+                        && $maintenance->status ===
+                        \App\Enums\MaintenanceStatus::Completed,
+
+                    'bg-gray-100 text-gray-500' =>
+                        $maintenance->status !== $status
+                        && $maintenance->status !==
+                        \App\Enums\MaintenanceStatus::Completed,
+                ])>
+                    {{ str($status->value)
+                ->replace('_', ' ')
+                ->title() }}
+                </div>
+
+                @if(!$loop->last)
+                    <span class="text-gray-400">
+                        →
+                    </span>
+                @endif
+            @endforeach
+
+        </div>
+
+        @if(
+                $maintenance->status
+                === \App\Enums\MaintenanceStatus::Cancelled
+            )
+            <div class="mt-4 rounded-lg bg-red-50 p-4 text-sm text-red-700">
+                This maintenance record was cancelled.
+            </div>
+        @endif
+
+    </div>
+
     <div class="space-y-6">
 
         @if(session('success'))
