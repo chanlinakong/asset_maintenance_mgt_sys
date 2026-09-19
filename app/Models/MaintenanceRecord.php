@@ -23,6 +23,7 @@ class MaintenanceRecord extends Model
         'started_at',
         'completed_at',
         'cost',
+        'service_kilometers',
         'service_provider',
         'notes',
         'maintenance_schedule_id',

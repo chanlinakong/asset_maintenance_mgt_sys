@@ -71,6 +71,11 @@ class StoreMaintenanceRecordRequest extends FormRequest
                 'min:0',
                 'max:999999999999.99',
             ],
+            'service_kilometers' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
 
             'service_provider' => [
                 'nullable',

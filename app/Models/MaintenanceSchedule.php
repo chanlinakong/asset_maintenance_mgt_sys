@@ -63,6 +63,20 @@ class MaintenanceSchedule extends Model
         );
     }
 
+    public function calculateNextDueKilometers(
+        ?int $serviceKilometers = null
+    ): ?int {
+        if (
+            !$this->interval_kilometers
+            || $serviceKilometers === null
+        ) {
+            return null;
+        }
+
+        return $serviceKilometers
+            + $this->interval_kilometers;
+    }
+
     public function markServiced(
         ?Carbon $serviceDate = null,
         ?int $kilometers = null
@@ -87,9 +101,29 @@ class MaintenanceSchedule extends Model
 
             $this->next_due_kilometers =
                 $kilometers + $this->interval_kilometers;
+        } else {
+            $this->last_service_kilometers = $kilometers;
+
+            if (!$this->interval_kilometers) {
+                $this->next_due_kilometers = null;
+            }
         }
 
         $this->save();
+    }
+
+    public function isKilometersDue(
+        ?int $currentKilometers = null
+    ): bool {
+        if (
+            !$this->is_active
+            || !$this->next_due_kilometers
+            || $currentKilometers === null
+        ) {
+            return false;
+        }
+
+        return $currentKilometers >= $this->next_due_kilometers;
     }
 
     public function dueStatus(): string

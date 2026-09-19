@@ -87,6 +87,20 @@ class VehicleController extends Controller
         UpdateVehicleRequest $request,
         Vehicle $vehicle
     ): RedirectResponse {
+        if (
+            $vehicle->current_kilometers !== null
+            && isset($data['current_kilometers'])
+            && isset($data['current_kilometers'])
+            < $vehicle->current_kilometers
+        ) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'current_kilometers' =>
+                        'The current kilometer reading cannot be lower than the previous reading.',
+                ]);
+        }
+        
         $vehicle->update($request->validated());
 
         return redirect()

@@ -58,7 +58,8 @@ class MaintenanceService
                 $maintenance
                     ->maintenanceSchedule
                     ->markServiced(
-                        $maintenance->completed_at
+                        $maintenance->completed_at,
+                        $maintenance->service_kilometers
                 );
             }
 

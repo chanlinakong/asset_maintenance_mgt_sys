@@ -23,6 +23,7 @@ class Vehicle extends Model
         'status',
         'purchase_date',
         'notes',
+        'current_kilometers',
     ];
 
     protected function casts(): array
