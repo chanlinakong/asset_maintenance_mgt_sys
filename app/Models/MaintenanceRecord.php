@@ -25,6 +25,7 @@ class MaintenanceRecord extends Model
         'cost',
         'service_provider',
         'notes',
+        'maintenance_schedule_id',
     ];
 
     protected function casts(): array
@@ -51,5 +52,12 @@ class MaintenanceRecord extends Model
         return $this->hasMany(
             MaintenanceAudit::class
         )->latest();
+    }
+
+    public function maintenanceSchedule(): BelongsTo
+    {
+        return $this->belongsTo(
+            MaintenanceSchedule::class
+        );
     }
 }

@@ -2,8 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\MaintenanceStatus;
-use App\Enums\MaintenanceType;
+use App\Models\MaintenanceSchedule;
 use App\Models\MaintenanceRecord;
 use App\Models\Vehicle;
 use Illuminate\Support\Facades\DB;
@@ -37,25 +36,48 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-    
+        $totalSchedules = MaintenanceSchedule::where(
+            'is_active',
+            true
+        )->count();
+
+        $overdueSchedules = MaintenanceSchedule::where(
+            'is_active',
+            true
+        )
+            ->whereNotNull('next_due_date')
+            ->whereDate('next_due_date', '<', today())
+            ->count();
+
+        $dueSoonSchedules = MaintenanceSchedule::where(
+            'is_active',
+            true
+        )
+            ->whereNotNull('next_due_date')
+            ->whereBetween('next_due_date', [
+                today(),
+                today()->addDays(30),
+            ])
+            ->count();
+
         //Current Month Statistics
 
         $monthlyRecords = MaintenanceRecord::whereMonth(
             'reported_at',
             now()->month
         )->whereYear(
-            'reported_at',
-            now()->year
-        )->get();
+                'reported_at',
+                now()->year
+            )->get();
 
         $monthlyMaintenanceCount = $monthlyRecords->count();
 
         $monthlyMaintenanceCost = $monthlyRecords->sum(
-            fn ($record) => (float) $record->cost
+            fn($record) => (float) $record->cost
         );
 
         //Maintenance By Type
-        
+
         $maintenanceByType = MaintenanceRecord::query()
             ->select(
                 'type',
@@ -76,6 +98,16 @@ class DashboardController extends Controller
             ->orderByDesc('total')
             ->get();
 
+        $overdueMaintenanceSchedules =
+            MaintenanceSchedule::query()
+                ->with('vehicle')
+                ->where('is_active', true)
+                ->whereNotNull('next_due_date')
+                ->whereDate('next_due_date', '<', today())
+                ->orderBy('next_due_date')
+                ->limit(10)
+                ->get();
+
         return view('dashboard.index', [
             'totalVehicles' => $totalVehicles,
             'activeVehicles' => $activeVehicles,
@@ -95,6 +127,10 @@ class DashboardController extends Controller
 
             'maintenanceByStatus' =>
                 $maintenanceByStatus,
+            'totalSchedules' => $totalSchedules,
+            'overdueSchedules' => $overdueSchedules,
+            'dueSoonSchedules' => $dueSoonSchedules,
+            'overdueMaintenanceSchedules' => $overdueMaintenanceSchedules,
         ]);
     }
 }

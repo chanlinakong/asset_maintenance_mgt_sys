@@ -6,6 +6,8 @@ use App\Models\MaintenanceRecord;
 use Illuminate\Support\Facades\DB;
 use App\Models\MaintenanceAudit;
 use Illuminate\Support\Facades\Auth;
+use App\Enums\MaintenanceStatus;
+use App\Enums\MaintenanceType;
 
 class MaintenanceService
 {
@@ -47,6 +49,18 @@ class MaintenanceService
             $maintenance->vehicle->syncMaintenanceStatus();
 
             $newStatus = $maintenance->status;
+
+            if (
+                $newStatus === MaintenanceStatus::Completed
+                && $maintenance->type === MaintenanceType::Preventive
+                && $maintenance->maintenanceSchedule
+            ) {
+                $maintenance
+                    ->maintenanceSchedule
+                    ->markServiced(
+                        $maintenance->completed_at
+                );
+            }
 
             if ($oldStatus !== $newStatus) {
 

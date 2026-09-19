@@ -38,6 +38,11 @@ class Vehicle extends Model
         return $this->hasMany(MaintenanceRecord::class);
     }
 
+    public function maintenanceSchedules(): HasMany
+    {
+        return $this->hasMany(MaintenanceSchedule::class);
+    }
+
     public function hasActiveMaintenance(): bool
     {
         return $this->maintenanceRecords()
@@ -45,7 +50,7 @@ class Vehicle extends Model
                 'status',
                 MaintenanceStatus::InProgress->value
             )
-        ->exists();
+            ->exists();
     }
 
     public function syncMaintenanceStatus(): void

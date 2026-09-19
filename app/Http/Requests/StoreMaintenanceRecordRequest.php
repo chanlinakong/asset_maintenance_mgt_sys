@@ -82,6 +82,10 @@ class StoreMaintenanceRecordRequest extends FormRequest
                 'nullable',
                 'string',
             ],
+            'maintenance_schedule_id' => [
+                'nullable',
+                'exists:maintenance_schedules,id',
+            ],
         ];
     }
     public function withValidator(Validator $validator): void

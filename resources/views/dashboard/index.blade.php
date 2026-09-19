@@ -33,6 +33,16 @@
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
 
+            <x-stat-card title="Active Schedules" :value="$totalSchedules" icon="📅" />
+
+            <x-stat-card title="Due Soon" :value="$dueSoonSchedules" icon="⏰" />
+
+            <x-stat-card title="Overdue" :value="$overdueSchedules" icon="⚠️" />
+
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+
             <x-stat-card title="Total Maintenance Records" :value="$totalMaintenanceRecords" icon="🔧" />
 
             <x-stat-card title="This Month's Maintenance" :value="$monthlyMaintenanceCount" icon="📅" />
@@ -81,12 +91,12 @@
                                     <div class="h-2 overflow-hidden rounded-full bg-gray-100">
 
                                         <div class="h-full rounded-full bg-gray-900" style="
-                                                                                width:
-                                                                                {{ $maintenanceByType->max('total') > 0
+                                                                                                                width:
+                                                                                                                {{ $maintenanceByType->max('total') > 0
                         ? ($item->total / $maintenanceByType->max('total')) * 100
                         : 0
-                                                                                }}%
-                                                                            "></div>
+                                                                                                                }}%
+                                                                                                            "></div>
 
                                     </div>
 
@@ -152,6 +162,68 @@
 
         </div>
 
+        // Overdue Preventive Maintenance
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+
+            <div class="overflow-hidden rounded-xl bg-white shadow-sm">
+
+                <div class="border-b border-gray-100 p-5">
+                    <h2 class="font-semibold text-gray-900">
+                        Overdue Preventive Maintenance
+                    </h2>
+
+                    <p class="mt-1 text-sm text-gray-500">
+                        Maintenance schedules that require attention.
+                    </p>
+                </div>
+
+                <div class="divide-y divide-gray-100">
+
+                    @forelse($overdueMaintenanceSchedules as $schedule)
+
+                        <a href="{{ route('maintenance-schedules.show', $schedule) }}" class="block p-5 hover:bg-gray-50">
+
+                            <div class="flex items-center justify-between gap-4">
+
+                                <div>
+                                    <p class="font-medium text-gray-900">
+                                        {{ $schedule->title }}
+                                    </p>
+
+                                    <p class="mt-1 text-sm text-gray-500">
+                                        {{ $schedule->vehicle->vehicle_code }}
+                                        ·
+                                        {{ $schedule->vehicle->name }}
+                                    </p>
+                                </div>
+
+                                <div class="text-right">
+
+                                    <p class="text-sm font-semibold text-red-600">
+                                        {{ $schedule->next_due_date->format('d M Y') }}
+                                    </p>
+
+                                    <p class="text-xs text-gray-500">
+                                        Overdue
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                        </a>
+
+                    @empty
+
+                        <div class="p-8 text-center text-sm text-gray-500">
+                            No overdue preventive maintenance.
+                        </div>
+
+                    @endforelse
+
+                </div>
+
+            </div>
 
         {{-- Recent maintenance --}}
         <div class="rounded-xl bg-white shadow-sm">

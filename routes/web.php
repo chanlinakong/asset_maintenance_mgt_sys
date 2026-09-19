@@ -5,6 +5,7 @@ use App\Http\Controllers\MaintenanceRecordController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\MaintenanceScheduleController;
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
@@ -65,14 +66,19 @@ Route::middleware(['auth', 'role:admin,staff'])->group(function () {
         ->only([
             'index',
             'show',
-        ]);
+    ]);
 
     Route::resource(
         'maintenance',
         MaintenanceRecordController::class
     )->parameters([
                 'maintenance' => 'maintenance',
-            ]);
+    ]);
+
+    Route::resource(
+        'maintenance-schedules',
+        MaintenanceScheduleController::class
+    );
 
 });
 
