@@ -1,3 +1,25 @@
+<div
+    x-data="{
+        status: @js(
+            old(
+                'status',
+                $maintenance->status->value ?? 'pending'
+            )
+        ),
+
+        updateStatus() {
+            if (this.status === 'pending' || this.status === 'cancelled') {
+                document.getElementById('started_at').value = '';
+                document.getElementById('completed_at').value = '';
+            }
+
+            if (this.status === 'in_progress') {
+                document.getElementById('completed_at').value = '';
+            }
+        }
+    }"
+>
+
 <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
 
     {{-- Vehicle --}}
@@ -93,7 +115,7 @@
             Status
         </label>
 
-        <select name="status" id="status"
+        <select name="status" id="status" x-model="status" @change="updateStatus()"
             class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500"
             required>
             @foreach($statuses as $status)
@@ -140,47 +162,37 @@
 
 
     {{-- Started --}}
-    <div>
-        <label class="mb-2 block text-sm font-medium">
-            Started At
-        </label>
+    <div x-show="status === 'in_progress' || status === 'completed'" x-transition>
+        <div>
+            <label class="mb-2 block text-sm font-medium">
+                Started At
+            </label>
 
-        <input type="datetime-local" name="started_at" value="{{ old(
-    'started_at',
-    isset($maintenance) && data_get($maintenance, 'started_at')
-    ? data_get($maintenance, 'started_at')->format('Y-m-d\TH:i')
-    : ''
-) }}" class="w-full rounded-lg border border-gray-300 px-3 py-2">
-
-        @error('started_at')
-            <p class="mt-1 text-sm text-red-600">
-                {{ $message }}
-            </p>
-        @enderror
+            <input type="datetime-local" name="started_at" value="{{ old('started_at', isset($maintenance) && data_get($maintenance, 'started_at') ? data_get($maintenance, 'started_at')->format('Y-m-d\TH:i') : '') }}" class="w-full rounded-lg border border-gray-300 px-3 py-2">
+            @error('started_at')
+                <p class="mt-1 text-sm text-red-600">
+                    {{ $message }}
+                </p>
+            @enderror
+        </div>
     </div>
-
 
     {{-- Completed --}}
-    <div>
-        <label class="mb-2 block text-sm font-medium">
-            Completed At
-        </label>
+    <div x-show="status === 'completed'" x-transition>
+        <div>
+            <label class="mb-2 block text-sm font-medium">
+                Completed At
+            </label>
 
-        <input type="datetime-local" name="completed_at" value="{{ old(
-    'completed_at',
-    isset($maintenance) && data_get($maintenance, 'completed_at')
-    ? data_get($maintenance, 'completed_at')->format('Y-m-d\TH:i')
-    : ''
-) }}" class="w-full rounded-lg border border-gray-300 px-3 py-2">
-
-        @error('completed_at')
-            <p class="mt-1 text-sm text-red-600">
-                {{ $message }}
-            </p>
-        @enderror
+            <input type="datetime-local" name="completed_at" value="{{ old('completed_at',isset($maintenance) && data_get($maintenance, 'completed_at') ? data_get($maintenance, 'completed_at')->format('Y-m-d\TH:i') : '') }}" class="w-full rounded-lg border border-gray-300 px-3 py-2">
+            @error('completed_at')
+                <p class="mt-1 text-sm text-red-600">
+                    {{ $message }}
+                </p>
+            @enderror
+        </div>
     </div>
-
-
+    
     {{-- Cost --}}
     <div>
         <label class="mb-2 block text-sm font-medium">

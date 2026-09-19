@@ -6,6 +6,7 @@ use App\Enums\MaintenanceStatus;
 use App\Enums\MaintenanceType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class StoreMaintenanceRecordRequest extends FormRequest
 {
@@ -82,5 +83,51 @@ class StoreMaintenanceRecordRequest extends FormRequest
                 'string',
             ],
         ];
+    }
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator) {
+
+            $status = MaintenanceStatus::tryFrom(
+                $this->input('status')
+            );
+
+            if (!$status) {
+                return;
+            }
+
+            $startedAt = $this->input('started_at');
+            $completedAt = $this->input('completed_at');
+
+            if (
+                $status === MaintenanceStatus::Pending
+                && ($startedAt || $completedAt)
+            ) {
+                $validator->errors()->add(
+                    'status',
+                    'Pending maintenance cannot have start or completion dates.'
+                );
+            }
+
+            if (
+                $status === MaintenanceStatus::InProgress
+                && $completedAt
+            ) {
+                $validator->errors()->add(
+                    'completed_at',
+                    'An in-progress maintenance cannot have a completion date.'
+                );
+            }
+
+            if (
+                $status === MaintenanceStatus::Cancelled
+                && ($startedAt || $completedAt)
+            ) {
+                $validator->errors()->add(
+                    'status',
+                    'Cancelled maintenance cannot have start or completion dates.'
+                );
+            }
+        });
     }
 }

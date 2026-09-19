@@ -122,7 +122,10 @@ class MaintenanceRecordController extends Controller
     public function show(
         MaintenanceRecord $maintenance
     ): View {
-        $maintenance->load('vehicle');
+        $maintenance->load([
+            'vehicle',
+            'audits.user',
+        ]);
 
         return view(
             'maintenance.show',
@@ -138,7 +141,7 @@ class MaintenanceRecordController extends Controller
             'vehicles' => Vehicle::orderBy('vehicle_code')->get(),
             'types' => MaintenanceType::cases(),
             'statuses' => $maintenance->status
-            ->allowedNextStatuses(),
+                ->allowedNextStatuses(),
         ]);
     }
 
@@ -162,7 +165,7 @@ class MaintenanceRecordController extends Controller
 
     public function destroy(
         MaintenanceRecord $maintenance,
-         MaintenanceService $maintenanceService
+        MaintenanceService $maintenanceService
     ): RedirectResponse {
         Gate::authorize('delete', $maintenance);
         $maintenanceService->delete($maintenance);

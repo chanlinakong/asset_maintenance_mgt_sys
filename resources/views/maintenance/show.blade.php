@@ -284,4 +284,91 @@
 
     </div>
 
+    <div class="mt-6 rounded-xl bg-white p-6 shadow-sm">
+
+        <h2 class="text-lg font-semibold text-gray-900">
+            Activity History
+        </h2>
+
+        <p class="mt-1 text-sm text-gray-500">
+            Record of changes made to this maintenance.
+        </p>
+
+        <div class="mt-6 space-y-5">
+
+            @forelse($maintenance->audits as $audit)
+
+                <div class="flex gap-4">
+
+                    <div class="flex flex-col items-center">
+
+                        <div class="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100">
+                            @if($audit->action === 'created')
+                                ➕
+                            @elseif($audit->action === 'status_changed')
+                                🔄
+                            @else
+                                📝
+                            @endif
+                        </div>
+
+                        @unless($loop->last)
+                            <div class="mt-2 h-full w-px bg-gray-200"></div>
+                        @endunless
+
+                    </div>
+
+                    <div class="pb-5">
+
+                        <p class="font-medium text-gray-900">
+                            {{ str($audit->action)
+                ->replace('_', ' ')
+                ->title() }}
+                        </p>
+
+                        @if(
+                                    $audit->old_status
+                                    && $audit->new_status
+                                )
+                                <p class="mt-1 text-sm text-gray-600">
+                                    {{ str($audit->old_status)
+                            ->replace('_', ' ')
+                            ->title() }}
+
+                                    →
+
+                                    {{ str($audit->new_status)
+                            ->replace('_', ' ')
+                            ->title() }}
+                                </p>
+                        @endif
+
+                        @if($audit->description)
+                            <p class="mt-1 text-sm text-gray-500">
+                                {{ $audit->description }}
+                            </p>
+                        @endif
+
+                        <p class="mt-2 text-xs text-gray-400">
+                            {{ $audit->user->name }}
+                            ·
+                            {{ $audit->created_at->format('d M Y, H:i') }}
+                        </p>
+
+                    </div>
+
+                </div>
+
+            @empty
+
+                <p class="text-sm text-gray-500">
+                    No activity history available.
+                </p>
+
+            @endforelse
+
+        </div>
+
+    </div>
+
 @endsection

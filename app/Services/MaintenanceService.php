@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\MaintenanceRecord;
 use Illuminate\Support\Facades\DB;
+use App\Models\MaintenanceAudit;
+use Illuminate\Support\Facades\Auth;
 
 class MaintenanceService
 {
@@ -17,6 +19,15 @@ class MaintenanceService
 
             $maintenance->vehicle->syncMaintenanceStatus();
 
+            MaintenanceAudit::create([
+                'maintenance_record_id' => $maintenance->id,
+                'user_id' => Auth::id(),
+                'action' => 'created',
+                'old_status' => null,
+                'new_status' => $maintenance->status->value,
+                'description' => 'Maintenance record created.',
+            ]);
+
             return $maintenance;
         });
     }
@@ -25,16 +36,30 @@ class MaintenanceService
         MaintenanceRecord $maintenance,
         array $data
     ): MaintenanceRecord {
-        return DB::transaction(function () use (
-            $maintenance,
-            $data
-        ) {
+        return DB::transaction(function () use ($maintenance, $data) {
+
+            $oldStatus = $maintenance->status;
 
             $maintenance->update($data);
 
             $maintenance->load('vehicle');
 
             $maintenance->vehicle->syncMaintenanceStatus();
+
+            $newStatus = $maintenance->status;
+
+            if ($oldStatus !== $newStatus) {
+
+                MaintenanceAudit::create([
+                    'maintenance_record_id' => $maintenance->id,
+                    'user_id' => Auth::id(),
+                    'action' => 'status_changed',
+                    'old_status' => $oldStatus->value,
+                    'new_status' => $newStatus->value,
+                    'description' =>
+                        'Maintenance status changed.',
+                ]);
+            }
 
             return $maintenance->fresh();
         });
