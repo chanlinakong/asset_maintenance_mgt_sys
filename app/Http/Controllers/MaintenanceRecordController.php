@@ -12,6 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Illuminate\Http\Request;
 use App\Enums\VehicleStatus;
+use Illuminate\Support\Facades\DB;
 
 class MaintenanceRecordController extends Controller
 {
@@ -105,36 +106,18 @@ class MaintenanceRecordController extends Controller
     ): RedirectResponse {
         $data = $request->validated();
 
-        $maintenance = MaintenanceRecord::create($data);
+        DB::transaction(function () use ($data, &$maintenance) {
+            $maintenance = MaintenanceRecord::create($data);
 
-        if ($maintenance->status === MaintenanceStatus::InProgress) {
-            $maintenance->vehicle->update([
-                'status' => VehicleStatus::Maintenance,
-            ]);
-        }
-
-        if (
-            in_array($maintenance->status, [
-                MaintenanceStatus::Completed,
-                MaintenanceStatus::Cancelled,
-            ], true)
-        ) {
-            if (
-                $maintenance->vehicle->status
-                === VehicleStatus::Maintenance
-            ) {
-                $maintenance->vehicle->update([
-                    'status' => VehicleStatus::Active,
-                ]);
-            }
-        }
+            $maintenance->vehicle->syncMaintenanceStatus();
+        });
 
         return redirect()
             ->route('maintenance.index')
             ->with(
                 'success',
                 'Maintenance record created successfully.'
-            );
+        );
     }
 
     public function show(
@@ -165,31 +148,15 @@ class MaintenanceRecordController extends Controller
     ): RedirectResponse {
         $data = $request->validated();
 
-        $maintenance->update($data);
+        DB::transaction(function () use ($data, $maintenance) {
 
-        $maintenance->load('vehicle');
+            $maintenance->update($data);
 
-        if ($maintenance->status === MaintenanceStatus::InProgress) {
-            $maintenance->vehicle->update([
-                'status' => VehicleStatus::Maintenance,
-            ]);
-        }
+            $maintenance->load('vehicle');
 
-        if (
-            in_array($maintenance->status, [
-                MaintenanceStatus::Completed,
-                MaintenanceStatus::Cancelled,
-            ], true)
-        ) {
-            if (
-                $maintenance->vehicle->status
-                === VehicleStatus::Maintenance
-            ) {
-                $maintenance->vehicle->update([
-                    'status' => VehicleStatus::Active,
-                ]);
-            }
-        }
+            $maintenance->vehicle->syncMaintenanceStatus();
+
+        });
 
         return redirect()
             ->route('maintenance.show', $maintenance)

@@ -31,6 +31,127 @@
 
         </div>
 
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+
+            <x-stat-card title="Total Maintenance Records" :value="$totalMaintenanceRecords" icon="🔧" />
+
+            <x-stat-card title="This Month's Maintenance" :value="$monthlyMaintenanceCount" icon="📅" />
+
+            <x-stat-card title="This Month's Cost" :value="'$' . number_format($monthlyMaintenanceCost, 2)" icon="💰" />
+
+        </div>
+
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+
+            {{-- Maintenance by Type --}}
+            <div class="rounded-xl bg-white p-6 shadow-sm">
+
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Maintenance by Type
+                </h2>
+
+                <p class="mt-1 text-sm text-gray-500">
+                    Number of maintenance records by type.
+                </p>
+
+                <div class="mt-6 space-y-4">
+
+                    @forelse($maintenanceByType as $item)
+
+                                @php
+                                    $label = str($item->type->value)
+                                        ->replace('_', ' ')
+                                        ->title();
+                                @endphp
+
+                                <div>
+
+                                    <div class="mb-1 flex justify-between">
+
+                                        <span class="text-sm font-medium text-gray-700">
+                                            {{ $label }}
+                                        </span>
+
+                                        <span class="text-sm font-semibold text-gray-900">
+                                            {{ $item->total }}
+                                        </span>
+
+                                    </div>
+
+                                    <div class="h-2 overflow-hidden rounded-full bg-gray-100">
+
+                                        <div class="h-full rounded-full bg-gray-900" style="
+                                                                                width:
+                                                                                {{ $maintenanceByType->max('total') > 0
+                        ? ($item->total / $maintenanceByType->max('total')) * 100
+                        : 0
+                                                                                }}%
+                                                                            "></div>
+
+                                    </div>
+
+                                </div>
+
+                    @empty
+
+                        <p class="text-sm text-gray-500">
+                            No maintenance data available.
+                        </p>
+
+                    @endforelse
+
+                </div>
+
+            </div>
+
+
+            {{-- Maintenance by Status --}}
+            <div class="rounded-xl bg-white p-6 shadow-sm">
+
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Maintenance Status
+                </h2>
+
+                <p class="mt-1 text-sm text-gray-500">
+                    Current maintenance record distribution.
+                </p>
+
+                <div class="mt-6 space-y-4">
+
+                    @forelse($maintenanceByStatus as $item)
+
+                        @php
+                            $label = str($item->status->value)
+                                ->replace('_', ' ')
+                                ->title();
+                        @endphp
+
+                        <div class="flex items-center justify-between">
+
+                            <span class="text-sm text-gray-700">
+                                {{ $label }}
+                            </span>
+
+                            <span class="rounded-full bg-gray-100 px-3 py-1 text-sm font-semibold text-gray-700">
+                                {{ $item->total }}
+                            </span>
+
+                        </div>
+
+                    @empty
+
+                        <p class="text-sm text-gray-500">
+                            No maintenance data available.
+                        </p>
+
+                    @endforelse
+
+                </div>
+
+            </div>
+
+        </div>
+
 
         {{-- Recent maintenance --}}
         <div class="rounded-xl bg-white shadow-sm">
