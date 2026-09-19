@@ -41,11 +41,11 @@ class Vehicle extends Model
     public function hasActiveMaintenance(): bool
     {
         return $this->maintenanceRecords()
-            ->whereIn('status', [
-                MaintenanceStatus::Pending->value,
-                MaintenanceStatus::InProgress->value,
-            ])
-            ->exists();
+            ->where(
+                'status',
+                MaintenanceStatus::InProgress->value
+            )
+        ->exists();
     }
 
     public function syncMaintenanceStatus(): void

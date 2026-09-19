@@ -8,4 +8,33 @@ enum MaintenanceStatus: string
     case InProgress = 'in_progress';
     case Completed = 'completed';
     case Cancelled = 'cancelled';
+
+    public function canTransitionTo(
+        self $newStatus
+    ): bool {
+        return match ($this) {
+
+            self::Pending => in_array(
+                $newStatus,
+                [
+                    self::InProgress,
+                    self::Cancelled,
+                ],
+                true
+            ),
+
+            self::InProgress => in_array(
+                $newStatus,
+                [
+                    self::Completed,
+                    self::Cancelled,
+                ],
+                true
+            ),
+
+            self::Completed => false,
+
+            self::Cancelled => false,
+        };
+    }
 }

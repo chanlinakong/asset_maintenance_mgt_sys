@@ -16,6 +16,8 @@ class UpdateMaintenanceRecordRequest extends FormRequest
 
     public function rules(): array
     {
+        $maintenance = $this->route('maintenance');
+        
         return [
             'vehicle_id' => [
                 'required',
@@ -82,5 +84,50 @@ class UpdateMaintenanceRecordRequest extends FormRequest
                 'string',
             ],
         ];
+    }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+
+            $maintenance = $this->route('maintenance');
+
+            if (!$maintenance) {
+                return;
+            }
+
+            $currentStatus = $maintenance->status;
+
+            $newStatus = MaintenanceStatus::tryFrom(
+                $this->input('status')
+            );
+
+            if (!$newStatus) {
+                return;
+            }
+
+            if (
+                $currentStatus === $newStatus
+            ) {
+                return;
+            }
+
+            if (
+                !$currentStatus->canTransitionTo($newStatus)
+            ) {
+                $validator->errors()->add(
+                    'status',
+                    "Maintenance status cannot be changed from "
+                    . str($currentStatus->value)
+                        ->replace('_', ' ')
+                        ->title()
+                    . " to "
+                    . str($newStatus->value)
+                        ->replace('_', ' ')
+                        ->title()
+                    . "."
+                );
+            }
+        });
     }
 }

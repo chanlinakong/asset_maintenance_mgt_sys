@@ -11,8 +11,8 @@ use App\Http\Requests\UpdateMaintenanceRecordRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Illuminate\Http\Request;
-use App\Enums\VehicleStatus;
-use Illuminate\Support\Facades\DB;
+use App\Services\MaintenanceService;
+use Illuminate\Support\Facades\Gate;
 
 class MaintenanceRecordController extends Controller
 {
@@ -102,22 +102,21 @@ class MaintenanceRecordController extends Controller
     }
 
     public function store(
-        StoreMaintenanceRecordRequest $request
+        StoreMaintenanceRecordRequest $request,
+        MaintenanceService $maintenanceService
     ): RedirectResponse {
         $data = $request->validated();
 
-        DB::transaction(function () use ($data, &$maintenance) {
-            $maintenance = MaintenanceRecord::create($data);
+        $data['status'] = MaintenanceStatus::Pending;
 
-            $maintenance->vehicle->syncMaintenanceStatus();
-        });
+        $maintenance = $maintenanceService->create($data);
 
         return redirect()
             ->route('maintenance.index')
             ->with(
                 'success',
                 'Maintenance record created successfully.'
-        );
+            );
     }
 
     public function show(
@@ -144,19 +143,13 @@ class MaintenanceRecordController extends Controller
 
     public function update(
         UpdateMaintenanceRecordRequest $request,
-        MaintenanceRecord $maintenance
+        MaintenanceRecord $maintenance,
+        MaintenanceService $maintenanceService
     ): RedirectResponse {
-        $data = $request->validated();
-
-        DB::transaction(function () use ($data, $maintenance) {
-
-            $maintenance->update($data);
-
-            $maintenance->load('vehicle');
-
-            $maintenance->vehicle->syncMaintenanceStatus();
-
-        });
+        $maintenanceService->update(
+            $maintenance,
+            $request->validated()
+        );
 
         return redirect()
             ->route('maintenance.show', $maintenance)
@@ -167,9 +160,11 @@ class MaintenanceRecordController extends Controller
     }
 
     public function destroy(
-        MaintenanceRecord $maintenance
+        MaintenanceRecord $maintenance,
+         MaintenanceService $maintenanceService
     ): RedirectResponse {
-        $maintenance->delete();
+        Gate::authorize('delete', $maintenance);
+        $maintenanceService->delete($maintenance);
 
         return redirect()
             ->route('maintenance.index')
