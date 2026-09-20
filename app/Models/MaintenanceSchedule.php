@@ -243,4 +243,15 @@ class MaintenanceSchedule extends Model
 
         return 'none';
     }
+
+    public function activeMaintenance(): ?MaintenanceRecord
+    {
+        return $this->maintenanceRecords()
+            ->whereIn('status', [
+                \App\Enums\MaintenanceStatus::Pending->value,
+                \App\Enums\MaintenanceStatus::InProgress->value,
+            ])
+            ->latest()
+            ->first();
+    }
 }

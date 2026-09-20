@@ -95,7 +95,7 @@ class MaintenanceScheduleController extends Controller
             $nextDueDate = \Carbon\Carbon::parse(
                 $data['last_service_date']
             )->addDays(
-                 (int) $data['interval_days']
+                    (int) $data['interval_days']
                 );
         } elseif (!empty($data['interval_days'])) {
             $nextDueDate = today()->addDays((int) $data['interval_days']);
@@ -147,19 +147,31 @@ class MaintenanceScheduleController extends Controller
         UpdateMaintenanceScheduleRequest $request,
         MaintenanceSchedule $maintenanceSchedule
     ): RedirectResponse {
-
+        
         $data = $request->validated();
 
         if (
-            empty($data['interval_days'])
-            && empty($data['interval_kilometers'])
+            !empty($data['last_service_date'])
+            && !empty($data['interval_days'])
         ) {
-            return back()
-                ->withInput()
-                ->withErrors([
-                    'interval_days' =>
-                        'At least one maintenance interval is required.',
-                ]);
+            $data['next_due_date'] = \Carbon\Carbon::parse(
+                $data['last_service_date']
+            )->addDays(
+                    (int) $data['interval_days']
+                );
+        } else {
+            $data['next_due_date'] = null;
+        }
+
+        if (
+            !empty($data['last_service_kilometers'])
+            && !empty($data['interval_kilometers'])
+        ) {
+            $data['next_due_kilometers'] =
+                (int) $data['last_service_kilometers']
+                + (int) $data['interval_kilometers'];
+        } else {
+            $data['next_due_kilometers'] = null;
         }
 
         $maintenanceSchedule->update($data);

@@ -7,6 +7,7 @@ use App\Enums\MaintenanceType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
+use App\Models\MaintenanceRecord;
 
 class StoreMaintenanceRecordRequest extends FormRequest
 {
@@ -199,6 +200,31 @@ class StoreMaintenanceRecordRequest extends FormRequest
                     $validator->errors()->add(
                         'service_kilometers',
                         'Service kilometers are required for this kilometer-based preventive maintenance.'
+                    );
+                }
+            }
+
+            //Prevent duplicate Pending and In progress for the same schedule
+            if (
+                $type === MaintenanceType::Preventive
+                && $scheduleId
+            ) {
+
+                $exists = MaintenanceRecord::query()
+                    ->where(
+                        'maintenance_schedule_id',
+                        $scheduleId
+                    )
+                    ->whereIn('status', [
+                        MaintenanceStatus::Pending->value,
+                        MaintenanceStatus::InProgress->value,
+                    ])
+                    ->exists();
+
+                if ($exists) {
+                    $validator->errors()->add(
+                        'maintenance_schedule_id',
+                        'This maintenance schedule already has an active maintenance record.'
                     );
                 }
             }

@@ -6,6 +6,7 @@ use App\Enums\MaintenanceStatus;
 use App\Enums\MaintenanceType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Models\MaintenanceRecord;
 
 class UpdateMaintenanceRecordRequest extends FormRequest
 {
@@ -217,6 +218,33 @@ class UpdateMaintenanceRecordRequest extends FormRequest
                     $validator->errors()->add(
                         'service_kilometers',
                         'Service kilometers are required for this kilometer-based preventive maintenance.'
+                    );
+                }
+            }
+
+            //Prevent duplicate Pending and In progress for the same schedule
+            if (
+                $type === MaintenanceType::Preventive
+                && $scheduleId
+                && $maintenance
+            ) {
+
+                $exists = MaintenanceRecord::query()
+                    ->where(
+                        'maintenance_schedule_id',
+                        $scheduleId
+                    )
+                    ->whereIn('status', [
+                        MaintenanceStatus::Pending->value,
+                        MaintenanceStatus::InProgress->value,
+                    ])
+                    ->where('id', '!=', $maintenance->id)
+                    ->exists();
+
+                if ($exists) {
+                    $validator->errors()->add(
+                        'maintenance_schedule_id',
+                        'This maintenance schedule already has another active maintenance record.'
                     );
                 }
             }

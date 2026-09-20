@@ -4,6 +4,11 @@
 
 @section('content')
 
+@php
+    $activeMaintenance =
+        $maintenanceSchedule->activeMaintenance();
+@endphp
+
     <div class="space-y-6">
 
         {{-- Header --}}
@@ -45,7 +50,10 @@
 
                 @endcan
 
-                @if($maintenanceSchedule->is_active)
+                @if(
+                                $maintenanceSchedule->is_active
+                                && !$maintenanceSchedule->activeMaintenance()
+                            )
 
                             <a href="{{ route('maintenance.create', [
                         'vehicle_id' => $maintenanceSchedule->vehicle_id,
@@ -133,6 +141,45 @@
 
         @endif
 
+        {{-- Active maintenance warning --}}
+        @if($activeMaintenance)
+
+            <div class="rounded-xl border border-blue-200 bg-blue-50 p-5">
+
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+
+                    <div>
+
+                        <h2 class="font-semibold text-blue-800">
+                            🔧 Maintenance already being handled
+                        </h2>
+
+                        <p class="mt-1 text-sm text-blue-700">
+                            {{ $activeMaintenance->title }}
+                        </p>
+
+                        <p class="mt-1 text-xs text-blue-600">
+                            Status:
+                            {{ str(
+                $activeMaintenance->status->value
+            )->replace('_', ' ')->title() }}
+                        </p>
+
+                    </div>
+
+                    <a href="{{ route(
+                'maintenance.show',
+                $activeMaintenance
+            ) }}"
+                        class="rounded-lg border border-blue-300 bg-white px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100">
+                        View Maintenance
+                    </a>
+
+                </div>
+
+            </div>
+
+        @endif
 
         {{-- Schedule information --}}
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -173,7 +220,7 @@
                     {{ $maintenanceSchedule->last_service_kilometers !== null
         ? number_format($maintenanceSchedule->last_service_kilometers) . ' km'
         : '—'
-                        }}
+                                    }}
                 </p>
 
             </div>
@@ -189,7 +236,7 @@
                     {{ $maintenanceSchedule->next_due_kilometers !== null
         ? number_format($maintenanceSchedule->next_due_kilometers) . ' km'
         : '—'
-                        }}
+                                    }}
                 </p>
 
             </div>
