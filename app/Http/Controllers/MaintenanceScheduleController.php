@@ -6,7 +6,10 @@ use App\Models\MaintenanceSchedule;
 use App\Models\Vehicle;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+use App\Http\Requests\StoreMaintenanceScheduleRequest;
+use App\Http\Requests\UpdateMaintenanceScheduleRequest;
 
 class MaintenanceScheduleController extends Controller
 {
@@ -67,38 +70,9 @@ class MaintenanceScheduleController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreMaintenanceScheduleRequest $request): RedirectResponse
     {
-        $data = $request->validate([
-            'vehicle_id' => [
-                'required',
-                'exists:vehicles,id',
-            ],
-            'title' => [
-                'required',
-                'string',
-                'max:150',
-            ],
-            'description' => [
-                'nullable',
-                'string',
-            ],
-            'last_service_date' => [
-                'nullable',
-                'date',
-                'before_or_equal:today',
-            ],
-            'interval_days' => [
-                'nullable',
-                'integer',
-                'min:1',
-            ],
-            'interval_kilometers' => [
-                'nullable',
-                'integer',
-                'min:1',
-            ],
-        ]);
+        $data = $request->validated();
 
         if (
             empty($data['interval_days'])
@@ -121,7 +95,7 @@ class MaintenanceScheduleController extends Controller
             $nextDueDate = \Carbon\Carbon::parse(
                 $data['last_service_date']
             )->addDays(
-                    $data['interval_days']
+                 (int) $data['interval_days']
                 );
         } elseif (!empty($data['interval_days'])) {
             $nextDueDate = today()->addDays((int) $data['interval_days']);
@@ -170,39 +144,11 @@ class MaintenanceScheduleController extends Controller
     }
 
     public function update(
-        Request $request,
+        UpdateMaintenanceScheduleRequest $request,
         MaintenanceSchedule $maintenanceSchedule
     ): RedirectResponse {
-        $data = $request->validate([
-            'vehicle_id' => [
-                'required',
-                'exists:vehicles,id',
-            ],
-            'title' => [
-                'required',
-                'string',
-                'max:150',
-            ],
-            'description' => [
-                'nullable',
-                'string',
-            ],
-            'last_service_date' => [
-                'nullable',
-                'date',
-                'before_or_equal:today',
-            ],
-            'interval_days' => [
-                'nullable',
-                'integer',
-                'min:1',
-            ],
-            'interval_kilometers' => [
-                'nullable',
-                'integer',
-                'min:1',
-            ],
-        ]);
+
+        $data = $request->validated();
 
         if (
             empty($data['interval_days'])
@@ -232,6 +178,11 @@ class MaintenanceScheduleController extends Controller
     public function destroy(
         MaintenanceSchedule $maintenanceSchedule
     ): RedirectResponse {
+        Gate::authorize(
+            'delete',
+            $maintenanceSchedule
+        );
+
         $maintenanceSchedule->update([
             'is_active' => false,
         ]);

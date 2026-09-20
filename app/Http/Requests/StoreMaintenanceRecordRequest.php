@@ -96,7 +96,7 @@ class StoreMaintenanceRecordRequest extends FormRequest
                     $query->where(
                         'vehicle_id',
                         $this->input('vehicle_id')
-                    );
+                    )->where('is_active', true);
                 }),
             ],
         ];

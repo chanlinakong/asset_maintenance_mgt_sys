@@ -30,6 +30,11 @@
                 🔧 Maintenance
             </a>
 
+            {{-- Admin + Staff --}}
+            <a href="{{ route('maintenance-schedules.index') }}" class="block rounded-lg px-4 py-3 font-medium hover:bg-gray-100">
+                📅 Maintenance Schedule
+            </a>
+
             {{-- Reports --}}
             <a href="{{ route('reports.index') }}" class="block rounded-lg px-4 py-3 font-medium hover:bg-gray-100">
                 📈 Reports

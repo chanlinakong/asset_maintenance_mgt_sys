@@ -79,7 +79,7 @@
 
         </div>
 
-        @if($maintenanceSchedule->dueStatus() === 'overdue')
+        @if($maintenanceSchedule->dueStatus($maintenanceSchedule->vehicle->current_kilometers) === 'overdue')
 
             <div class="rounded-xl border border-red-200 bg-red-50 p-5">
 
@@ -105,7 +105,7 @@
 
             </div>
 
-        @elseif($maintenanceSchedule->dueStatus() === 'due_soon')
+        @elseif($maintenanceSchedule->dueStatus($maintenanceSchedule->vehicle->current_kilometers) === 'due_soon')
 
             <div class="rounded-xl border border-yellow-200 bg-yellow-50 p-5">
 

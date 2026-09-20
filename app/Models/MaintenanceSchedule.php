@@ -134,13 +134,24 @@ class MaintenanceSchedule extends Model
         return $currentKilometers >= $this->next_due_kilometers;
     }
 
-    public function dueStatus(): string
-    {
+    public function dueStatus(
+        ?int $currentKilometers = null
+    ): string {
+
         if (!$this->is_active) {
             return 'inactive';
         }
 
-        if ($this->isOverdue()) {
+        $dateDue =
+            $this->next_due_date
+            && $this->next_due_date->isPast();
+
+        $kilometersDue =
+            $this->isKilometersDue(
+                $currentKilometers
+            );
+
+        if ($dateDue || $kilometersDue) {
             return 'overdue';
         }
 
@@ -150,6 +161,7 @@ class MaintenanceSchedule extends Model
 
         return 'up_to_date';
     }
+
 
     public function dueStatusLabel(): string
     {
