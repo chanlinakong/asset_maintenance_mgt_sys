@@ -16,6 +16,12 @@
         'status',
         $maintenance?->status?->value ?? 'pending'
     );
+
+    $selectedScheduleId = old(
+        'maintenance_schedule_id',
+        $maintenance?->maintenance_schedule_id
+            ?? $selectedSchedule?->id
+    );
 @endphp
 
 <div
@@ -193,6 +199,7 @@
                     <option
                         :value="schedule.id"
                         x-text="schedule.title"
+                        :selected="schedule.id == '{{ $selectedScheduleId }}'"
                     ></option>
                 </template>
             </select>

@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property Carbon|null $last_service_date
@@ -40,6 +41,13 @@ class MaintenanceSchedule extends Model
     public function vehicle(): BelongsTo
     {
         return $this->belongsTo(Vehicle::class);
+    }
+
+    public function maintenanceRecords(): HasMany
+    {
+        return $this->hasMany(
+            MaintenanceRecord::class
+        );
     }
 
     public function isOverdue(): bool

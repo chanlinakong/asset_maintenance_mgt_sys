@@ -149,7 +149,9 @@ class MaintenanceScheduleController extends Controller
     ): View {
         $maintenanceSchedule->load([
             'vehicle',
-            'vehicle.maintenanceRecords',
+            'maintenanceRecords' => function ($query) {
+                $query->latest('reported_at');
+            },
         ]);
 
         return view(
