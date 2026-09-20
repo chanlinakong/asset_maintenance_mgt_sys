@@ -80,6 +80,11 @@ Route::middleware(['auth', 'role:admin,staff'])->group(function () {
         MaintenanceScheduleController::class
     );
 
+     Route::get(
+        '/vehicles/{vehicle}/maintenance-schedules',
+        [MaintenanceScheduleController::class, 'forVehicle']
+    )->name('vehicles.maintenance-schedules');
+
 });
 
 require __DIR__ . '/auth.php';

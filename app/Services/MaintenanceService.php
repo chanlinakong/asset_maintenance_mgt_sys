@@ -51,7 +51,8 @@ class MaintenanceService
             $newStatus = $maintenance->status;
 
             if (
-                $newStatus === MaintenanceStatus::Completed
+                $oldStatus !== MaintenanceStatus::Completed
+                && $newStatus === MaintenanceStatus::Completed
                 && $maintenance->type === MaintenanceType::Preventive
                 && $maintenance->maintenanceSchedule
             ) {
@@ -60,7 +61,7 @@ class MaintenanceService
                     ->markServiced(
                         $maintenance->completed_at,
                         $maintenance->service_kilometers
-                );
+                    );
             }
 
             if ($oldStatus !== $newStatus) {

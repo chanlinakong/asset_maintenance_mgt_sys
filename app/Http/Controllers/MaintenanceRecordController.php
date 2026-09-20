@@ -87,17 +87,30 @@ class MaintenanceRecordController extends Controller
 
     public function create(Request $request): View
     {
-        $vehicleId = $request->integer('vehicle_id');
+        $selectedVehicle = null;
+        $schedules = collect();
 
-        $vehicle = $vehicleId
-            ? Vehicle::find($vehicleId)
-            : null;
+        if ($request->filled('vehicle_id')) {
+
+            $selectedVehicle = Vehicle::find(
+                $request->integer('vehicle_id')
+            );
+
+            if ($selectedVehicle) {
+                $schedules = $selectedVehicle
+                    ->maintenanceSchedules()
+                    ->where('is_active', true)
+                    ->orderBy('title')
+                    ->get();
+            }
+        }
 
         return view('maintenance.create', [
             'vehicles' => Vehicle::orderBy('vehicle_code')->get(),
+            'selectedVehicle' => $selectedVehicle,
+            'schedules' => $schedules,
             'types' => MaintenanceType::cases(),
             'statuses' => MaintenanceStatus::cases(),
-            'selectedVehicle' => $vehicle,
         ]);
     }
 

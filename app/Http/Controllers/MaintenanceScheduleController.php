@@ -123,8 +123,8 @@ class MaintenanceScheduleController extends Controller
             )->addDays(
                     $data['interval_days']
                 );
-        }elseif (!empty($data['interval_days'])) {
-             $nextDueDate = today()->addDays((int) $data['interval_days']);
+        } elseif (!empty($data['interval_days'])) {
+            $nextDueDate = today()->addDays((int) $data['interval_days']);
         }
 
         $schedule = MaintenanceSchedule::create([
@@ -240,5 +240,25 @@ class MaintenanceScheduleController extends Controller
                 'success',
                 'Maintenance schedule deactivated successfully.'
             );
+    }
+
+    //restrive vehicle schedule when user load new vehicle in maintenance record form
+    public function forVehicle(
+        Vehicle $vehicle
+    ): \Illuminate\Http\JsonResponse {
+        $schedules = $vehicle
+            ->maintenanceSchedules()
+            ->where('is_active', true)
+            ->orderBy('title')
+            ->get([
+                'id',
+                'title',
+                'interval_days',
+                'interval_kilometers',
+                'next_due_date',
+                'next_due_kilometers',
+            ]);
+
+        return response()->json($schedules);
     }
 }

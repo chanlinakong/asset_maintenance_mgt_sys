@@ -71,6 +71,7 @@ class StoreMaintenanceRecordRequest extends FormRequest
                 'min:0',
                 'max:999999999999.99',
             ],
+
             'service_kilometers' => [
                 'nullable',
                 'integer',
@@ -89,7 +90,14 @@ class StoreMaintenanceRecordRequest extends FormRequest
             ],
             'maintenance_schedule_id' => [
                 'nullable',
-                'exists:maintenance_schedules,id',
+                'integer',
+                Rule::exists('maintenance_schedules', 'id')
+                ->where(function ($query) {
+                    $query->where(
+                        'vehicle_id',
+                        $this->input('vehicle_id')
+                    );
+                }),
             ],
         ];
     }

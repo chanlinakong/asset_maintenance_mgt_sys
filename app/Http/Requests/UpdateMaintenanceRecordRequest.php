@@ -17,7 +17,7 @@ class UpdateMaintenanceRecordRequest extends FormRequest
     public function rules(): array
     {
         $maintenance = $this->route('maintenance');
-        
+
         return [
             'vehicle_id' => [
                 'required',
@@ -72,7 +72,7 @@ class UpdateMaintenanceRecordRequest extends FormRequest
                 'min:0',
                 'max:999999999999.99',
             ],
-            
+
             'service_kilometers' => [
                 'nullable',
                 'integer',
@@ -91,7 +91,14 @@ class UpdateMaintenanceRecordRequest extends FormRequest
             ],
             'maintenance_schedule_id' => [
                 'nullable',
-                'exists:maintenance_schedules,id',
+                'integer',
+                Rule::exists('maintenance_schedules', 'id')
+                    ->where(function ($query) {
+                        $query->where(
+                            'vehicle_id',
+                            $this->input('vehicle_id')
+                        );
+                    }),
             ],
         ];
     }
@@ -136,6 +143,24 @@ class UpdateMaintenanceRecordRequest extends FormRequest
                         ->replace('_', ' ')
                         ->title()
                     . "."
+                );
+            }
+
+            $type = MaintenanceType::tryFrom(
+                $this->input('type')
+            );
+
+            $scheduleId = $this->input(
+                'maintenance_schedule_id'
+            );
+
+            if (
+                $type === MaintenanceType::Preventive
+                && !$scheduleId
+            ) {
+                $validator->errors()->add(
+                    'maintenance_schedule_id',
+                    'A preventive maintenance record must have a maintenance schedule.'
                 );
             }
         });
