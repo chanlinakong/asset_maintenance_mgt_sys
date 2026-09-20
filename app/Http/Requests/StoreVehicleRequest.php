@@ -69,6 +69,11 @@ class StoreVehicleRequest extends FormRequest
                 'nullable',
                 'string',
             ],
+            'current_kilometers' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
         ];
     }
 }

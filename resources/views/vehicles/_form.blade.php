@@ -5,12 +5,8 @@
             Vehicle Code
         </label>
 
-        <input
-            type="text"
-            name="vehicle_code"
-            value="{{ old('vehicle_code', $vehicle->vehicle_code ?? '') }}"
-            class="w-full rounded-lg border border-gray-300 px-3 py-2"
-        >
+        <input type="text" name="vehicle_code" value="{{ old('vehicle_code', $vehicle->vehicle_code ?? '') }}"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2">
 
         @error('vehicle_code')
             <p class="mt-1 text-sm text-red-600">
@@ -25,12 +21,8 @@
             Vehicle Name
         </label>
 
-        <input
-            type="text"
-            name="name"
-            value="{{ old('name', $vehicle->name ?? '') }}"
-            class="w-full rounded-lg border border-gray-300 px-3 py-2"
-        >
+        <input type="text" name="name" value="{{ old('name', $vehicle->name ?? '') }}"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2">
 
         @error('name')
             <p class="mt-1 text-sm text-red-600">
@@ -45,13 +37,8 @@
             Type
         </label>
 
-        <input
-            type="text"
-            name="type"
-            placeholder="Truck, Forklift, Crane..."
-            value="{{ old('type', $vehicle->type ?? '') }}"
-            class="w-full rounded-lg border border-gray-300 px-3 py-2"
-        >
+        <input type="text" name="type" placeholder="Truck, Forklift, Crane..."
+            value="{{ old('type', $vehicle->type ?? '') }}" class="w-full rounded-lg border border-gray-300 px-3 py-2">
 
         @error('type')
             <p class="mt-1 text-sm text-red-600">
@@ -66,12 +53,8 @@
             Brand
         </label>
 
-        <input
-            type="text"
-            name="brand"
-            value="{{ old('brand', $vehicle->brand ?? '') }}"
-            class="w-full rounded-lg border border-gray-300 px-3 py-2"
-        >
+        <input type="text" name="brand" value="{{ old('brand', $vehicle->brand ?? '') }}"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2">
     </div>
 
 
@@ -80,12 +63,8 @@
             Model
         </label>
 
-        <input
-            type="text"
-            name="model"
-            value="{{ old('model', $vehicle->model ?? '') }}"
-            class="w-full rounded-lg border border-gray-300 px-3 py-2"
-        >
+        <input type="text" name="model" value="{{ old('model', $vehicle->model ?? '') }}"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2">
     </div>
 
 
@@ -94,15 +73,10 @@
             Registration Number
         </label>
 
-        <input
-            type="text"
-            name="registration_number"
-            value="{{ old(
-                'registration_number',
-                $vehicle->registration_number ?? ''
-            ) }}"
-            class="w-full rounded-lg border border-gray-300 px-3 py-2"
-        >
+        <input type="text" name="registration_number" value="{{ old(
+    'registration_number',
+    $vehicle->registration_number ?? ''
+) }}" class="w-full rounded-lg border border-gray-300 px-3 py-2">
 
         @error('registration_number')
             <p class="mt-1 text-sm text-red-600">
@@ -111,32 +85,47 @@
         @enderror
     </div>
 
+    <div>
+        <label for="current_kilometers" class="block text-sm font-medium text-gray-700">
+            Current Kilometers
+        </label>
+
+        <input type="number" name="current_kilometers" id="current_kilometers" value="{{ old('current_kilometers',$vehicle->current_kilometers) }}"
+            min="0" step="1"
+            class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500"
+            placeholder="e.g. 50000">
+
+        @error('current_kilometers')
+            <p class="mt-1 text-sm text-red-600">
+                {{ $message }}
+            </p>
+        @enderror
+
+        <p class="mt-1 text-xs text-gray-500">
+            Enter the vehicle's current odometer reading.
+        </p>
+    </div>
+
 
     <div>
         <label class="mb-2 block text-sm font-medium">
             Status
         </label>
 
-        <select
-            name="status"
-            class="w-full rounded-lg border border-gray-300 px-3 py-2"
-        >
+        <select name="status" class="w-full rounded-lg border border-gray-300 px-3 py-2">
             @foreach($statuses as $status)
-                <option
-                    value="{{ $status->value }}"
-                    @selected(
+                    <option value="{{ $status->value }}" @selected(
                         old(
                             'status',
                             isset($vehicle)
-                                ? $vehicle->status->value
-                                : 'active'
+                            ? $vehicle->status->value
+                            : 'active'
                         ) === $status->value
-                    )
-                >
-                    {{ str($status->value)
-                        ->replace('_', ' ')
-                        ->title() }}
-                </option>
+                    )>
+                        {{ str($status->value)
+                ->replace('_', ' ')
+                ->title() }}
+                    </option>
             @endforeach
         </select>
 
@@ -153,17 +142,12 @@
             Purchase Date
         </label>
 
-        <input
-            type="date"
-            name="purchase_date"
-            value="{{ old(
-                'purchase_date',
-                isset($vehicle) && $vehicle->purchase_date
-                    ? $vehicle->purchase_date->format('Y-m-d')
-                    : ''
-            ) }}"
-            class="w-full rounded-lg border border-gray-300 px-3 py-2"
-        >
+        <input type="date" name="purchase_date" value="{{ old(
+    'purchase_date',
+    isset($vehicle) && $vehicle->purchase_date
+    ? $vehicle->purchase_date->format('Y-m-d')
+    : ''
+) }}" class="w-full rounded-lg border border-gray-300 px-3 py-2">
 
         @error('purchase_date')
             <p class="mt-1 text-sm text-red-600">
@@ -180,9 +164,6 @@
         Notes
     </label>
 
-    <textarea
-        name="notes"
-        rows="4"
-        class="w-full rounded-lg border border-gray-300 px-3 py-2"
-    >{{ old('notes', $vehicle->notes ?? '') }}</textarea>
+    <textarea name="notes" rows="4"
+        class="w-full rounded-lg border border-gray-300 px-3 py-2">{{ old('notes', $vehicle->notes ?? '') }}</textarea>
 </div>

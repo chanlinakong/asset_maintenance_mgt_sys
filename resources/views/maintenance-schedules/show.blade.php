@@ -72,7 +72,7 @@
                 </span>
 
                 <span class="rounded-full px-3 py-1 text-xs font-semibold {{ $maintenanceSchedule->dueStatusClasses() }}">
-                    {{ $maintenanceSchedule->dueStatusLabel() }}
+                    {{ $maintenanceSchedule->dueStatusLabel($maintenanceSchedule->vehicle->current_kilometers) }}
                 </span>
 
             </div>
@@ -173,7 +173,7 @@
                     {{ $maintenanceSchedule->last_service_kilometers !== null
         ? number_format($maintenanceSchedule->last_service_kilometers) . ' km'
         : '—'
-                    }}
+                        }}
                 </p>
 
             </div>
@@ -189,13 +189,47 @@
                     {{ $maintenanceSchedule->next_due_kilometers !== null
         ? number_format($maintenanceSchedule->next_due_kilometers) . ' km'
         : '—'
-                    }}
+                        }}
                 </p>
 
             </div>
 
         </div>
 
+        {{-- Mileage Status --}}
+        @if(
+                $maintenanceSchedule->next_due_kilometers !== null
+                && $maintenanceSchedule->vehicle->current_kilometers !== null
+            )
+
+            @php
+                $remainingKm = $maintenanceSchedule->kilometersRemaining(
+                    $maintenanceSchedule->vehicle->current_kilometers
+                );
+            @endphp
+
+            <div class="rounded-xl bg-white p-5 shadow-sm">
+
+                <p class="text-sm text-gray-500">
+                    Mileage Status
+                </p>
+
+                @if($remainingKm < 0)
+
+                    <p class="mt-2 font-semibold text-red-700">
+                        {{ number_format(abs($remainingKm)) }} km overdue
+                    </p>
+
+                @else
+
+                    <p class="mt-2 font-semibold text-gray-900">
+                        {{ number_format($remainingKm) }} km remaining
+                    </p>
+
+                @endif
+
+            </div>
+        @endif
 
         {{-- Interval --}}
         <div class="rounded-xl bg-white p-6 shadow-sm">

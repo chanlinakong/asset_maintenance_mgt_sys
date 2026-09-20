@@ -5,6 +5,8 @@ namespace App\Http\Requests;
 use App\Enums\VehicleStatus;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Models\Vehicle;
+use Illuminate\Validation\Validator;
 
 class UpdateVehicleRequest extends FormRequest
 {
@@ -73,6 +75,40 @@ class UpdateVehicleRequest extends FormRequest
                 'nullable',
                 'string',
             ],
+            'current_kilometers' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
         ];
+    }
+
+    public function withValidator(
+        Validator $validator
+    ): void {
+        $validator->after(function (Validator $validator) {
+
+            /** @var Vehicle|null $vehicle */
+            $vehicle = $this->route('vehicle');
+
+            if (!$vehicle) {
+                return;
+            }
+
+            $newKilometers =
+                $this->input('current_kilometers');
+
+            if (
+                $newKilometers !== null
+                && $vehicle->current_kilometers !== null
+                && (int) $newKilometers
+                < $vehicle->current_kilometers
+            ) {
+                $validator->errors()->add(
+                    'current_kilometers',
+                    'Current kilometers cannot be lower than the existing vehicle reading.'
+                );
+            }
+        });
     }
 }

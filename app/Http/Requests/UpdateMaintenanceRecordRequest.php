@@ -163,6 +163,63 @@ class UpdateMaintenanceRecordRequest extends FormRequest
                     'A preventive maintenance record must have a maintenance schedule.'
                 );
             }
+
+            $vehicleId = $this->input('vehicle_id');
+
+            $serviceKilometers =
+                $this->input('service_kilometers');
+
+            if (
+                $vehicleId
+                && $serviceKilometers !== null
+            ) {
+                $vehicle = \App\Models\Vehicle::find(
+                    $vehicleId
+                );
+
+                if (
+                    $vehicle
+                    && $vehicle->current_kilometers !== null
+                    && (int) $serviceKilometers
+                    < $vehicle->current_kilometers
+                ) {
+                    $validator->errors()->add(
+                        'service_kilometers',
+                        'Service kilometers cannot be lower than the vehicle current kilometers.'
+                    );
+                }
+            }
+
+            $type = MaintenanceType::tryFrom(
+                $this->input('type')
+            );
+
+            $scheduleId =
+                $this->input('maintenance_schedule_id');
+
+            if (
+                $type === MaintenanceType::Preventive
+                && $scheduleId
+                && $this->input('status') ===
+                MaintenanceStatus::Completed->value
+            ) {
+
+                $schedule =
+                    \App\Models\MaintenanceSchedule::find(
+                        $scheduleId
+                    );
+
+                if (
+                    $schedule
+                    && $schedule->interval_kilometers
+                    && !$this->filled('service_kilometers')
+                ) {
+                    $validator->errors()->add(
+                        'service_kilometers',
+                        'Service kilometers are required for this kilometer-based preventive maintenance.'
+                    );
+                }
+            }
         });
     }
 }

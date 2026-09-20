@@ -88,85 +88,99 @@
 
                         @forelse($schedules as $schedule)
 
-                            <tr>
+                                            <tr>
 
-                                <td class="px-6 py-4">
-                                    <p class="font-medium text-gray-900">
-                                        {{ $schedule->vehicle->vehicle_code }}
-                                    </p>
+                                                <td class="px-6 py-4">
+                                                    <p class="font-medium text-gray-900">
+                                                        {{ $schedule->vehicle->vehicle_code }}
+                                                    </p>
 
-                                    <p class="text-sm text-gray-500">
-                                        {{ $schedule->vehicle->name }}
-                                    </p>
-                                </td>
+                                                    <p class="text-sm text-gray-500">
+                                                        {{ $schedule->vehicle->name }}
+                                                    </p>
+                                                </td>
 
-                                <td class="px-6 py-4">
-                                    <p class="font-medium text-gray-900">
-                                        {{ $schedule->title }}
-                                    </p>
+                                                <td class="px-6 py-4">
+                                                    <p class="font-medium text-gray-900">
+                                                        {{ $schedule->title }}
+                                                    </p>
 
-                                    <p class="text-sm text-gray-500">
-                                        @if($schedule->interval_days)
-                                            Every {{ $schedule->interval_days }} days
-                                        @endif
+                                                    <p class="text-sm text-gray-500">
+                                                        @if($schedule->interval_days)
+                                                            Every {{ $schedule->interval_days }} days
+                                                        @endif
 
-                                        @if(
-                                                $schedule->interval_days
-                                                && $schedule->interval_kilometers
-                                            )
-                                            ·
-                                        @endif
+                                                        @if(
+                                                                $schedule->interval_days
+                                                                && $schedule->interval_kilometers
+                                                            )
+                                                            ·
+                                                        @endif
 
-                                        @if($schedule->interval_kilometers)
-                                            Every {{ number_format($schedule->interval_kilometers) }} km
-                                        @endif
-                                    </p>
-                                </td>
+                                                        @if($schedule->interval_kilometers)
+                                                            Every {{ number_format($schedule->interval_kilometers) }} km
+                                                        @endif
+                                                    </p>
+                                                </td>
 
-                                <td class="px-6 py-4 text-sm text-gray-700">
-                                    {{ $schedule->next_due_date?->format('d M Y') ?? '—' }}
-                                </td>
+                                                <td class="px-6 py-4 text-sm text-gray-700">
+                                                    {{ $schedule->next_due_date?->format('d M Y') ?? '—' }}
+                                                </td>
 
-                                <td class="px-6 py-4">
+                                                <!-- <td class="px-6 py-4">
 
-                                    @if(!$schedule->is_active)
+                                                            @if(!$schedule->is_active)
 
-                                        <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">
-                                            Inactive
-                                        </span>
+                                                                <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">
+                                                                    Inactive
+                                                                </span>
 
-                                    @elseif($schedule->isOverdue())
+                                                            @elseif($schedule->isOverdue())
 
-                                        <span class="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
-                                            Overdue
-                                        </span>
+                                                                <span class="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
+                                                                    Overdue
+                                                                </span>
 
-                                    @elseif($schedule->isDueSoon())
+                                                            @elseif($schedule->isDueSoon())
 
-                                        <span class="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
-                                            Due Soon
-                                        </span>
+                                                                <span class="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
+                                                                    Due Soon
+                                                                </span>
 
-                                    @else
+                                                            @else
 
-                                        <span class="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-                                            Up to Date
-                                        </span>
+                                                                <span class="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                                                                    Up to Date
+                                                                </span>
 
-                                    @endif
+                                                            @endif
 
-                                </td>
+                                                        </td> -->
 
-                                <td class="px-6 py-4 text-right">
+                                                <td class="px-6 py-4">
 
-                                    <a href="{{ route('maintenance-schedules.show', $schedule) }}"
-                                        class="text-sm font-medium text-gray-700 hover:text-gray-900">
-                                        View
-                                    </a>
+                                                    @php
+                                                        $currentKilometers = $schedule->vehicle?->current_kilometers;
+                                                    @endphp
 
-                                </td>
+                                                    <span class="rounded-full px-3 py-1 text-xs font-semibold {{ 
+                                $schedule->dueStatusClasses($currentKilometers)
+                            }}">
+                                                        {{ $schedule->dueStatusLabel($currentKilometers) }}
+                                                    </span>
 
-                            </tr>
+                                                </td>
+
+                                                <td class="px-6 py-4 text-right">
+
+                                                    <a href="{{ route('maintenance-schedules.show', $schedule) }}"
+                                                        class="text-sm font-medium text-gray-700 hover:text-gray-900">
+                                                        View
+                                                    </a>
+
+                                                </td>
+
+                                            </tr>
 
                         @empty
 
@@ -207,32 +221,32 @@
 
                             <!-- @if(!$schedule->is_active)
 
-                                    <span class="rounded-full bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-600">
-                                        Inactive
-                                    </span>
+                                            <span class="rounded-full bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-600">
+                                                Inactive
+                                            </span>
 
-                                @elseif($schedule->isOverdue())
+                                        @elseif($schedule->isOverdue())
 
-                                    <span class="rounded-full bg-red-100 px-2 py-1 text-xs font-semibold text-red-700">
-                                        Overdue
-                                    </span>
+                                            <span class="rounded-full bg-red-100 px-2 py-1 text-xs font-semibold text-red-700">
+                                                Overdue
+                                            </span>
 
-                                @elseif($schedule->isDueSoon())
+                                        @elseif($schedule->isDueSoon())
 
-                                    <span class="rounded-full bg-yellow-100 px-2 py-1 text-xs font-semibold text-yellow-700">
-                                        Due Soon
-                                    </span>
+                                            <span class="rounded-full bg-yellow-100 px-2 py-1 text-xs font-semibold text-yellow-700">
+                                                Due Soon
+                                            </span>
 
-                                @else
+                                        @else
 
-                                    <span class="rounded-full bg-green-100 px-2 py-1 text-xs font-semibold text-green-700">
-                                        Up to Date
-                                    </span>
+                                            <span class="rounded-full bg-green-100 px-2 py-1 text-xs font-semibold text-green-700">
+                                                Up to Date
+                                            </span>
 
-                                @endif -->
+                                        @endif -->
 
                             <span class="rounded-full px-3 py-1 text-xs font-semibold {{ $schedule->dueStatusClasses() }}">
-                                {{ $schedule->dueStatusLabel() }}
+                                {{ $schedule->dueStatusLabel($schedule->vehicle->current_kilometers) }}
                             </span>
 
                         </div>

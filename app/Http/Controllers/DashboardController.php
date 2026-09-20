@@ -41,23 +41,45 @@ class DashboardController extends Controller
             true
         )->count();
 
-        $overdueSchedules = MaintenanceSchedule::where(
-            'is_active',
-            true
-        )
-            ->whereNotNull('next_due_date')
-            ->whereDate('next_due_date', '<', today())
+        //by date not km
+        // $overdueSchedules = MaintenanceSchedule::where(
+        //     'is_active',
+        //     true
+        // )
+        //     ->whereNotNull('next_due_date')
+        //     ->whereDate('next_due_date', '<', today())
+        //     ->count();
+
+        // $dueSoonSchedules = MaintenanceSchedule::where(
+        //     'is_active',
+        //     true
+        // )
+        //     ->whereNotNull('next_due_date')
+        //     ->whereBetween('next_due_date', [
+        //         today(),
+        //         today()->addDays(30),
+        //     ])
+        //     ->count();
+
+        $activeSchedules = MaintenanceSchedule::query()
+            ->with('vehicle')
+            ->where('is_active', true)
+            ->get();
+
+        $overdueSchedules = $activeSchedules
+            ->filter(function ($schedule) {
+                return $schedule->dueStatus(
+                    $schedule->vehicle?->current_kilometers
+                ) === 'overdue';
+            })
             ->count();
 
-        $dueSoonSchedules = MaintenanceSchedule::where(
-            'is_active',
-            true
-        )
-            ->whereNotNull('next_due_date')
-            ->whereBetween('next_due_date', [
-                today(),
-                today()->addDays(30),
-            ])
+        $dueSoonSchedules = $activeSchedules
+            ->filter(function ($schedule) {
+                return $schedule->dueStatus(
+                    $schedule->vehicle?->current_kilometers
+                ) === 'due_soon';
+            })
             ->count();
 
         //Current Month Statistics
@@ -131,6 +153,7 @@ class DashboardController extends Controller
             'overdueSchedules' => $overdueSchedules,
             'dueSoonSchedules' => $dueSoonSchedules,
             'overdueMaintenanceSchedules' => $overdueMaintenanceSchedules,
+            'activeSchedules' => $activeSchedules,
         ]);
     }
 }

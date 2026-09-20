@@ -44,7 +44,24 @@ class MaintenanceService
 
             $maintenance->update($data);
 
-            $maintenance->load('vehicle');
+            $maintenance->load([
+                'vehicle',
+                'maintenanceSchedule',
+            ]);
+
+            if (
+                $maintenance->service_kilometers !== null
+                && (
+                    $maintenance->vehicle->current_kilometers === null
+                    || $maintenance->service_kilometers
+                    > $maintenance->vehicle->current_kilometers
+                )
+            ) {
+                $maintenance->vehicle->update([
+                    'current_kilometers' =>
+                        $maintenance->service_kilometers,
+                ]);
+            }
 
             $maintenance->vehicle->syncMaintenanceStatus();
 
