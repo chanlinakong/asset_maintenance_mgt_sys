@@ -155,11 +155,16 @@ class MaintenanceSchedule extends Model
             return 'inactive';
         }
 
+        // Overdue by date OR kilometers
         if ($this->isDue($currentKilometers)) {
             return 'overdue';
         }
 
-        if ($this->isDueSoon()) {
+        // Due soon by date OR kilometers
+        if (
+            $this->isDueSoon()
+            || $this->isKilometersDueSoon($currentKilometers)
+        ) {
             return 'due_soon';
         }
 
@@ -212,6 +217,23 @@ class MaintenanceSchedule extends Model
         }
 
         return $currentKilometers >= $this->next_due_kilometers;
+    }
+
+    public function isKilometersDueSoon(
+        ?int $currentKilometers = null,
+        int $warningKilometers = 500
+    ): bool {
+        if (
+            !$this->is_active
+            || !$this->next_due_kilometers
+            || $currentKilometers === null
+        ) {
+            return false;
+        }
+
+        $remainingKm = $this->next_due_kilometers - $currentKilometers;
+
+        return $remainingKm >= 0 && $remainingKm <= $warningKilometers;
     }
 
     public function isDue(

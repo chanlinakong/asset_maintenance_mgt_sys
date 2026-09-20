@@ -120,15 +120,17 @@ class DashboardController extends Controller
             ->orderByDesc('total')
             ->get();
 
-        $overdueMaintenanceSchedules =
-            MaintenanceSchedule::query()
-                ->with('vehicle')
-                ->where('is_active', true)
-                ->whereNotNull('next_due_date')
-                ->whereDate('next_due_date', '<', today())
-                ->orderBy('next_due_date')
-                ->limit(10)
-                ->get();
+        $overdueMaintenanceSchedules = $activeSchedules
+            ->filter(function ($schedule) {
+                return $schedule->dueStatus(
+                    $schedule->vehicle?->current_kilometers
+                ) === 'overdue';
+            })
+            ->sortBy(function ($schedule) {
+                return $schedule->next_due_date;
+            })
+            ->take(10)
+            ->values();
 
         return view('dashboard.index', [
             'totalVehicles' => $totalVehicles,

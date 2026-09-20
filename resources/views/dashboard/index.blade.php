@@ -200,7 +200,7 @@
                                 <div class="text-right">
 
                                     <p class="text-sm font-semibold text-red-600">
-                                        {{ $schedule->next_due_date->format('d M Y') }}
+                                        {{ $schedule->next_due_date?->format('d M Y') ?? '—'  }}
                                     </p>
 
                                     <p class="text-xs text-gray-500">
