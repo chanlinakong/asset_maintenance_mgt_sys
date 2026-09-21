@@ -6,6 +6,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MaintenanceScheduleController;
+use App\Http\Controllers\NotificationController;
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
@@ -66,24 +67,39 @@ Route::middleware(['auth', 'role:admin,staff'])->group(function () {
         ->only([
             'index',
             'show',
-    ]);
+        ]);
 
     Route::resource(
         'maintenance',
         MaintenanceRecordController::class
     )->parameters([
                 'maintenance' => 'maintenance',
-    ]);
+            ]);
 
     Route::resource(
         'maintenance-schedules',
         MaintenanceScheduleController::class
     );
 
-     Route::get(
+    Route::get(
         '/vehicles/{vehicle}/maintenance-schedules',
         [MaintenanceScheduleController::class, 'forVehicle']
     )->name('vehicles.maintenance-schedules');
+
+    Route::get(
+        '/notifications',
+        [NotificationController::class, 'index']
+    )->name('notifications.index');
+
+    Route::get(
+        '/notifications/{notification}/read',
+        [NotificationController::class, 'read']
+    )->name('notifications.read');
+
+    Route::post(
+        '/notifications/read-all',
+        [NotificationController::class, 'readAll']
+    )->name('notifications.read-all');
 
 });
 
