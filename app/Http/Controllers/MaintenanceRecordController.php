@@ -13,6 +13,7 @@ use Illuminate\View\View;
 use Illuminate\Http\Request;
 use App\Services\MaintenanceService;
 use Illuminate\Support\Facades\Gate;
+use App\Models\Part;
 
 class MaintenanceRecordController extends Controller
 {
@@ -163,11 +164,18 @@ class MaintenanceRecordController extends Controller
         $maintenance->load([
             'vehicle',
             'audits.user',
+            'attachments.uploader',
+            'maintenanceParts.part',
         ]);
+
+        $parts = Part::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
 
         return view(
             'maintenance.show',
-            compact('maintenance')
+            compact('maintenance','parts')
         );
     }
 

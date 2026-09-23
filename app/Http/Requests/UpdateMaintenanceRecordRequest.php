@@ -67,11 +67,29 @@ class UpdateMaintenanceRecordRequest extends FormRequest
                 'prohibited_if:status,pending,cancelled',
             ],
 
-            'cost' => [
-                'required',
+            // 'cost' => [
+            //     'required',
+            //     'numeric',
+            //     'min:0',
+            //     'max:999999999999.99',
+            // ],
+
+            'parts_cost' => [
+                'nullable',
                 'numeric',
                 'min:0',
-                'max:999999999999.99',
+            ],
+
+            'labor_cost' => [
+                'nullable',
+                'numeric',
+                'min:0',
+            ],
+
+            'other_cost' => [
+                'nullable',
+                'numeric',
+                'min:0',
             ],
 
             'service_kilometers' => [

@@ -1,0 +1,46 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('maintenance_attachments', function (Blueprint $table) {
+            $table->id();
+
+            $table->foreignId('maintenance_record_id')
+                ->constrained('maintenance_records')
+                ->cascadeOnDelete();
+
+            $table->foreignId('uploaded_by')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
+            $table->string('file_name', 255);
+
+            $table->string('file_path', 500);
+
+            $table->string('file_type', 100)
+                ->nullable();
+
+            $table->unsignedBigInteger('file_size')
+                ->nullable();
+
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('maintenance_attachments');
+    }
+};

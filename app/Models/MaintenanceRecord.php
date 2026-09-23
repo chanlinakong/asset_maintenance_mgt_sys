@@ -27,6 +27,9 @@ class MaintenanceRecord extends Model
         'service_provider',
         'notes',
         'maintenance_schedule_id',
+        'parts_cost',
+        'labor_cost',
+        'other_cost',
     ];
 
     protected function casts(): array
@@ -60,5 +63,19 @@ class MaintenanceRecord extends Model
         return $this->belongsTo(
             MaintenanceSchedule::class
         );
+    }
+
+    public function maintenanceParts(): HasMany
+    {
+        return $this->hasMany(
+            MaintenancePart::class
+        );
+    }
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(
+            MaintenanceAttachment::class
+        )->latest();
     }
 }

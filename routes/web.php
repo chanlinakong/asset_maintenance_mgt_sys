@@ -6,7 +6,9 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MaintenanceScheduleController;
+use App\Http\Controllers\MaintenanceAttachmentController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\MaintenancePartController;
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
@@ -72,9 +74,7 @@ Route::middleware(['auth', 'role:admin,staff'])->group(function () {
     Route::resource(
         'maintenance',
         MaintenanceRecordController::class
-    )->parameters([
-                'maintenance' => 'maintenance',
-            ]);
+    )->parameters(['maintenance' => 'maintenance',]);
 
     Route::resource(
         'maintenance-schedules',
@@ -85,6 +85,8 @@ Route::middleware(['auth', 'role:admin,staff'])->group(function () {
         '/vehicles/{vehicle}/maintenance-schedules',
         [MaintenanceScheduleController::class, 'forVehicle']
     )->name('vehicles.maintenance-schedules');
+
+    // Notification
 
     Route::get(
         '/notifications',
@@ -100,6 +102,48 @@ Route::middleware(['auth', 'role:admin,staff'])->group(function () {
         '/notifications/read-all',
         [NotificationController::class, 'readAll']
     )->name('notifications.read-all');
+
+    // Maintenance-Attachment
+
+    Route::post(
+        '/maintenance/{maintenance}/attachments',
+        [
+            MaintenanceAttachmentController::class,
+            'store',
+        ]
+    )->name(
+            'maintenance.attachments.store'
+        );
+
+    Route::delete(
+        '/maintenance/{maintenance}/attachments/{attachment}',
+        [
+            MaintenanceAttachmentController::class,
+            'destroy',
+        ]
+    )->name('maintenance.attachments.destroy');
+
+    // Maintenance-Part
+
+    Route::post(
+        '/maintenance/{maintenance}/parts',
+        [
+            MaintenancePartController::class,
+            'store',
+        ]
+    )->name(
+            'maintenance.parts.store'
+        );
+
+    Route::delete(
+        '/maintenance/{maintenance}/parts/{maintenancePart}',
+        [
+            MaintenancePartController::class,
+            'destroy',
+        ]
+    )->name(
+            'maintenance.parts.destroy'
+        );
 
 });
 

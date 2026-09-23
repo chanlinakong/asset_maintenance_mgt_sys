@@ -66,12 +66,12 @@ class StoreMaintenanceRecordRequest extends FormRequest
                 'prohibited_if:status,pending,cancelled',
             ],
 
-            'cost' => [
-                'required',
-                'numeric',
-                'min:0',
-                'max:999999999999.99',
-            ],
+            // 'cost' => [
+            //     'required',
+            //     'numeric',
+            //     'min:0',
+            //     'max:999999999999.99',
+            // ],
 
             'service_kilometers' => [
                 'nullable',
@@ -99,6 +99,23 @@ class StoreMaintenanceRecordRequest extends FormRequest
                             $this->input('vehicle_id')
                         )->where('is_active', true);
                     }),
+            ],
+            'parts_cost' => [
+                'nullable',
+                'numeric',
+                'min:0',
+            ],
+
+            'labor_cost' => [
+                'nullable',
+                'numeric',
+                'min:0',
+            ],
+
+            'other_cost' => [
+                'nullable',
+                'numeric',
+                'min:0',
             ],
         ];
     }

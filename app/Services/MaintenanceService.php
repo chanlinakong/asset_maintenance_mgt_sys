@@ -15,6 +15,14 @@ class MaintenanceService
     {
         return DB::transaction(function () use ($data) {
 
+            $data['parts_cost'] = $data['parts_cost'] ?? 0;
+
+            $data['labor_cost'] = $data['labor_cost'] ?? 0;
+
+            $data['other_cost'] = $data['other_cost'] ?? 0;
+
+            $data['cost'] = $data['parts_cost'] + $data['labor_cost'] + $data['other_cost'];
+
             $maintenance = MaintenanceRecord::create($data);
 
             $maintenance->load('vehicle');
@@ -40,6 +48,15 @@ class MaintenanceService
     ): MaintenanceRecord {
         return DB::transaction(function () use ($maintenance, $data) {
 
+            $data['parts_cost'] = $data['parts_cost'] ?? 0;
+
+            $data['labor_cost'] = $data['labor_cost'] ?? 0;
+
+            $data['other_cost'] = $data['other_cost'] ?? 0;
+
+            $data['cost'] = $data['parts_cost'] + $data['labor_cost'] + $data['other_cost'];
+
+
             $oldStatus = $maintenance->status;
 
             $maintenance->update($data);
@@ -49,7 +66,10 @@ class MaintenanceService
                 'maintenanceSchedule',
             ]);
 
+            $newStatus = $maintenance->status;
+
             if (
+                $newStatus === MaintenanceStatus::Completed &&
                 $maintenance->service_kilometers !== null
                 && (
                     $maintenance->vehicle->current_kilometers === null
@@ -64,8 +84,6 @@ class MaintenanceService
             }
 
             $maintenance->vehicle->syncMaintenanceStatus();
-
-            $newStatus = $maintenance->status;
 
             if (
                 $oldStatus !== MaintenanceStatus::Completed
