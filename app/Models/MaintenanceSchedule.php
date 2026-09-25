@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\MaintenanceStatus;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -38,6 +39,10 @@ class MaintenanceSchedule extends Model
         ];
     }
 
+    /*
+    | Relationships
+    */
+
     public function vehicle(): BelongsTo
     {
         return $this->belongsTo(Vehicle::class);
@@ -45,31 +50,234 @@ class MaintenanceSchedule extends Model
 
     public function maintenanceRecords(): HasMany
     {
-        return $this->hasMany(
-            MaintenanceRecord::class
-        );
+        return $this->hasMany(MaintenanceRecord::class);
     }
 
-    public function isOverdue(): bool
+    /* Date-based status */
+
+    public function isDueByDate(): bool
     {
-        if (!$this->is_active || !$this->next_due_date) {
+        if (
+            !$this->is_active
+            || !$this->next_due_date
+        ) {
             return false;
         }
 
         return $this->next_due_date->isPast();
     }
 
-    public function isDueSoon(int $days = 30): bool
-    {
-        if (!$this->is_active || !$this->next_due_date) {
+    public function isDueSoonByDate(
+        int $days = 30
+    ): bool {
+        if (
+            !$this->is_active
+            || !$this->next_due_date
+        ) {
             return false;
         }
 
+        $today = today();
+
+        $warningDate = $today->copy()
+            ->addDays($days);
+
         return $this->next_due_date->between(
-            today(),
-            today()->addDays($days)
+            $today,
+            $warningDate
         );
     }
+
+    /* Kilometer-based status */
+
+    public function isDueByKilometers(
+        ?int $currentKilometers = null
+    ): bool {
+        if (
+            !$this->is_active
+            || $this->next_due_kilometers === null
+            || $currentKilometers === null
+        ) {
+            return false;
+        }
+
+        return $currentKilometers >=
+            $this->next_due_kilometers;
+    }
+
+    public function isKilometersDueSoon(
+        ?int $currentKilometers = null,
+        int $warningKilometers = 500
+    ): bool {
+        if (
+            !$this->is_active
+            || $this->next_due_kilometers === null
+            || $currentKilometers === null
+        ) {
+            return false;
+        }
+
+        $remainingKm =
+            $this->next_due_kilometers
+            - $currentKilometers;
+
+        return $remainingKm >= 0
+            && $remainingKm <= $warningKilometers;
+    }
+
+    public function kilometersRemaining(
+        ?int $currentKilometers = null
+    ): ?int {
+        if (
+            $this->next_due_kilometers === null
+            || $currentKilometers === null
+        ) {
+            return null;
+        }
+
+        return $this->next_due_kilometers
+            - $currentKilometers;
+    }
+
+    /* Overall due status */
+
+    public function isDue(
+        ?int $currentKilometers = null
+    ): bool {
+        return $this->isDueByDate()
+            || $this->isDueByKilometers(
+                $currentKilometers
+            );
+    }
+
+    public function isDueSoon(
+        int $days = 30,
+        ?int $currentKilometers = null,
+        int $warningKilometers = 500
+    ): bool {
+        return $this->isDueSoonByDate($days) || $this->isKilometersDueSoon($currentKilometers, $warningKilometers);
+    }
+
+    public function dueStatus(
+        ?int $currentKilometers = null
+    ): string {
+        if (!$this->is_active) {
+            return 'inactive';
+        }
+
+        /*
+         * Overdue has priority.
+         *
+         * If either date OR kilometers has
+         * already reached the due point,
+         * the schedule is overdue.
+         */
+        if ($this->isDue($currentKilometers)) {
+            return 'overdue';
+        }
+
+        /*
+         * Otherwise check whether the schedule
+         * is approaching its due point.
+         */
+        if (
+            $this->isDueSoon(
+                30,
+                $currentKilometers,
+                500
+            )
+        ) {
+            return 'due_soon';
+        }
+
+        return 'up_to_date';
+    }
+
+    /*
+    | Display helpers
+    */
+
+    public function dueStatusLabel(
+        ?int $currentKilometers = null
+    ): string {
+        return match (
+        $this->dueStatus($currentKilometers)
+        ) {
+            'inactive' => 'Inactive',
+            'overdue' => 'Overdue',
+            'due_soon' => 'Due Soon',
+            'up_to_date' => 'Up to Date',
+        };
+    }
+
+    public function dueStatusClasses(
+        ?int $currentKilometers = null
+    ): string {
+        return match (
+        $this->dueStatus($currentKilometers)
+        ) {
+            'inactive' =>
+                'bg-gray-100 text-gray-600',
+
+            'overdue' =>
+                'bg-red-100 text-red-700',
+
+            'due_soon' =>
+                'bg-yellow-100 text-yellow-700',
+
+            'up_to_date' =>
+                'bg-green-100 text-green-700',
+        };
+    }
+
+    /* Due reason */
+
+    public function dueReason(
+        ?int $currentKilometers = null
+    ): string {
+        $dateDue =
+            $this->isDueByDate();
+
+        $kilometersDue =
+            $this->isDueByKilometers(
+                $currentKilometers
+            );
+
+        if (
+            $dateDue
+            && $kilometersDue
+        ) {
+            return 'both';
+        }
+
+        if ($dateDue) {
+            return 'date';
+        }
+
+        if ($kilometersDue) {
+            return 'kilometers';
+        }
+
+        return 'none';
+    }
+
+    public function dueReasonLabel(
+        ?int $currentKilometers = null
+    ): string {
+        return match (
+        $this->dueReason($currentKilometers)
+        ) {
+            'date' => 'Due by date',
+
+            'kilometers' => 'Due by mileage',
+
+            'both' => 'Due by date and mileage',
+
+            default => 'No immediate action',
+        };
+    }
+
+    /* Service / next due calculation */
 
     public function calculateNextDueKilometers(
         ?int $serviceKilometers = null
@@ -91,26 +299,39 @@ class MaintenanceSchedule extends Model
     ): void {
         $serviceDate ??= today();
 
-        $this->last_service_date = $serviceDate;
+        $this->last_service_date =
+            $serviceDate;
 
+        /*
+         * Calculate next date.
+         */
         if ($this->interval_days) {
-            $this->next_due_date = $serviceDate
-                ->copy()
-                ->addDays($this->interval_days);
+            $this->next_due_date =
+                $serviceDate
+                    ->copy()
+                    ->addDays(
+                        $this->interval_days
+                    );
         } else {
             $this->next_due_date = null;
         }
 
+        /*
+         * Calculate next kilometer due point.
+         */
         if (
             $this->interval_kilometers
             && $kilometers !== null
         ) {
-            $this->last_service_kilometers = $kilometers;
+            $this->last_service_kilometers =
+                $kilometers;
 
             $this->next_due_kilometers =
-                $kilometers + $this->interval_kilometers;
+                $kilometers
+                + $this->interval_kilometers;
         } else {
-            $this->last_service_kilometers = $kilometers;
+            $this->last_service_kilometers =
+                $kilometers;
 
             if (!$this->interval_kilometers) {
                 $this->next_due_kilometers = null;
@@ -120,158 +341,14 @@ class MaintenanceSchedule extends Model
         $this->save();
     }
 
-    public function isKilometersDue(
-        ?int $currentKilometers = null
-    ): bool {
-        if (
-            !$this->is_active
-            || !$this->next_due_kilometers
-            || $currentKilometers === null
-        ) {
-            return false;
-        }
+    /* Active maintenance */
 
-        return $currentKilometers >= $this->next_due_kilometers;
-    }
-
-    public function kilometersRemaining(
-        ?int $currentKilometers = null
-    ): ?int {
-        if (
-            $this->next_due_kilometers === null
-            || $currentKilometers === null
-        ) {
-            return null;
-        }
-
-        return $this->next_due_kilometers
-            - $currentKilometers;
-    }
-
-    public function dueStatus(
-        ?int $currentKilometers = null
-    ): string {
-        if (!$this->is_active) {
-            return 'inactive';
-        }
-
-        // Overdue by date OR kilometers
-        if ($this->isDue($currentKilometers)) {
-            return 'overdue';
-        }
-
-        // Due soon by date OR kilometers
-        if (
-            $this->isDueSoon()
-            || $this->isKilometersDueSoon($currentKilometers)
-        ) {
-            return 'due_soon';
-        }
-
-        return 'up_to_date';
-    }
-
-
-    public function dueStatusLabel(
-        ?int $currentKilometers = null
-    ): string {
-        return match (
-        $this->dueStatus($currentKilometers)
-        ) {
-            'inactive' => 'Inactive',
-            'overdue' => 'Overdue',
-            'due_soon' => 'Due Soon',
-            'up_to_date' => 'Up to Date',
-        };
-    }
-
-    public function dueStatusClasses(
-        ?int $currentKilometers = null
-    ): string {
-        return match (
-        $this->dueStatus($currentKilometers)
-        ) {
-            'inactive' => 'bg-gray-100 text-gray-600',
-            'overdue' => 'bg-red-100 text-red-700',
-            'due_soon' => 'bg-yellow-100 text-yellow-700',
-            'up_to_date' => 'bg-green-100 text-green-700',
-        };
-    }
-
-    public function isDueByDate(): bool
-    {
-        return $this->is_active
-            && $this->next_due_date
-            && $this->next_due_date->isPast();
-    }
-
-    public function isDueByKilometers(
-        ?int $currentKilometers = null
-    ): bool {
-        if (
-            !$this->is_active
-            || !$this->next_due_kilometers
-            || $currentKilometers === null
-        ) {
-            return false;
-        }
-
-        return $currentKilometers >= $this->next_due_kilometers;
-    }
-
-    public function isKilometersDueSoon(
-        ?int $currentKilometers = null,
-        int $warningKilometers = 500
-    ): bool {
-        if (
-            !$this->is_active
-            || !$this->next_due_kilometers
-            || $currentKilometers === null
-        ) {
-            return false;
-        }
-
-        $remainingKm = $this->next_due_kilometers - $currentKilometers;
-
-        return $remainingKm >= 0 && $remainingKm <= $warningKilometers;
-    }
-
-    public function isDue(
-        ?int $currentKilometers = null
-    ): bool {
-        return $this->isDueByDate()
-            || $this->isDueByKilometers($currentKilometers);
-    }
-
-    public function dueReason(
-        ?int $currentKilometers = null
-    ): string {
-        $dateDue = $this->isDueByDate();
-
-        $kilometersDue =
-            $this->isDueByKilometers($currentKilometers);
-
-        if ($dateDue && $kilometersDue) {
-            return 'both';
-        }
-
-        if ($dateDue) {
-            return 'date';
-        }
-
-        if ($kilometersDue) {
-            return 'kilometers';
-        }
-
-        return 'none';
-    }
-
-    public function activeMaintenance(): ?MaintenanceRecord
-    {
+    public function activeMaintenance(
+    ): ?MaintenanceRecord {
         return $this->maintenanceRecords()
             ->whereIn('status', [
-                \App\Enums\MaintenanceStatus::Pending->value,
-                \App\Enums\MaintenanceStatus::InProgress->value,
+                MaintenanceStatus::Pending->value,
+                MaintenanceStatus::InProgress->value,
             ])
             ->latest()
             ->first();

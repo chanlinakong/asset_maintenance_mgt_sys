@@ -92,8 +92,9 @@ class MaintenanceRecordController extends Controller
         $selectedSchedule = null;
         $schedules = collect();
 
-        if ($request->filled('vehicle_id')) {
+        /* Vehicle selection */
 
+        if ($request->filled('vehicle_id')) {
             $selectedVehicle = Vehicle::find(
                 $request->integer('vehicle_id')
             );
@@ -107,35 +108,63 @@ class MaintenanceRecordController extends Controller
             }
         }
 
-        if ($request->filled('schedule_id')) {
+        /*
+        | Schedule selectio
+        | The dashboard will send schedule_id.
+        | Example:
+        | /maintenance/create?vehicle_id=1&schedule_id=5
+        */
 
+        if ($request->filled('schedule_id')) {
             $selectedSchedule =
                 \App\Models\MaintenanceSchedule::query()
+                    ->with('vehicle')
                     ->where('id', $request->integer('schedule_id'))
                     ->where('is_active', true)
                     ->first();
 
-            if ($selectedSchedule) {
-
-                $selectedVehicle ??=
-                    $selectedSchedule->vehicle;
-
-                if (
-                    !$selectedVehicle
-                    || $selectedSchedule->vehicle_id
-                    !== $selectedVehicle->id
-                ) {
-                    abort(404);
-                }
+            if (!$selectedSchedule) {
+                abort(404);
             }
+
+            /* If no vehicle was supplied, get it from the schedule. */
+
+            $selectedVehicle ??= $selectedSchedule->vehicle;
+
+            /* Make sure the selected schedule belongs to the selected vehicle. */
+
+            if (
+                !$selectedVehicle
+                || $selectedSchedule->vehicle_id
+                !== $selectedVehicle->id
+            ) {
+                abort(404);
+            }
+
+            /*
+            | Load schedules for the selected vehicle.
+            | This is important when the user arrives from the dashboard
+            | using only schedule_id.
+            */
+
+            $schedules = $selectedVehicle
+                ->maintenanceSchedules()
+                ->where('is_active', true)
+                ->orderBy('title')
+                ->get();
         }
 
         return view('maintenance.create', [
             'vehicles' => Vehicle::orderBy('vehicle_code')->get(),
+
             'selectedVehicle' => $selectedVehicle,
+
             'selectedSchedule' => $selectedSchedule,
+
             'schedules' => $schedules,
+
             'types' => MaintenanceType::cases(),
+
             'statuses' => MaintenanceStatus::cases(),
         ]);
     }
@@ -175,7 +204,7 @@ class MaintenanceRecordController extends Controller
 
         return view(
             'maintenance.show',
-            compact('maintenance','parts')
+            compact('maintenance', 'parts')
         );
     }
 

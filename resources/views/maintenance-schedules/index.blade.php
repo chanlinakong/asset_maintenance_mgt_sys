@@ -127,36 +127,6 @@
                                                     {{ $schedule->next_due_date?->format('d M Y') ?? '—' }}
                                                 </td>
 
-                                                <!-- <td class="px-6 py-4">
-
-                                                            @if(!$schedule->is_active)
-
-                                                                <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">
-                                                                    Inactive
-                                                                </span>
-
-                                                            @elseif($schedule->isOverdue())
-
-                                                                <span class="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
-                                                                    Overdue
-                                                                </span>
-
-                                                            @elseif($schedule->isDueSoon())
-
-                                                                <span class="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
-                                                                    Due Soon
-                                                                </span>
-
-                                                            @else
-
-                                                                <span class="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-                                                                    Up to Date
-                                                                </span>
-
-                                                            @endif
-
-                                                        </td> -->
-
                                                 <td class="px-6 py-4">
 
                                                     @php
@@ -218,32 +188,6 @@
                                     {{ $schedule->vehicle->name }}
                                 </p>
                             </div>
-
-                            <!-- @if(!$schedule->is_active)
-
-                                            <span class="rounded-full bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-600">
-                                                Inactive
-                                            </span>
-
-                                        @elseif($schedule->isOverdue())
-
-                                            <span class="rounded-full bg-red-100 px-2 py-1 text-xs font-semibold text-red-700">
-                                                Overdue
-                                            </span>
-
-                                        @elseif($schedule->isDueSoon())
-
-                                            <span class="rounded-full bg-yellow-100 px-2 py-1 text-xs font-semibold text-yellow-700">
-                                                Due Soon
-                                            </span>
-
-                                        @else
-
-                                            <span class="rounded-full bg-green-100 px-2 py-1 text-xs font-semibold text-green-700">
-                                                Up to Date
-                                            </span>
-
-                                        @endif -->
 
                             <span class="rounded-full px-3 py-1 text-xs font-semibold {{ $schedule->dueStatusClasses() }}">
                                 {{ $schedule->dueStatusLabel($schedule->vehicle->current_kilometers) }}
