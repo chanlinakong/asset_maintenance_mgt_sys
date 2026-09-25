@@ -8,6 +8,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 use App\Models\MaintenanceRecord;
+use App\Enums\VehicleStatus;
 
 class StoreMaintenanceRecordRequest extends FormRequest
 {
@@ -125,6 +126,20 @@ class StoreMaintenanceRecordRequest extends FormRequest
 
             $vehicleId = $this->input('vehicle_id');
 
+            $vehicle = \App\Models\Vehicle::find(
+                $this->input('vehicle_id')
+            );
+
+            if (
+                $vehicle
+                && $vehicle->status === VehicleStatus::OutOfService
+            ) {
+                $validator->errors()->add(
+                    'vehicle_id',
+                    'Maintenance cannot be created for a vehicle that is out of service.'
+                );
+            }
+
             $serviceKilometers =
                 $this->input('service_kilometers');
 
@@ -133,18 +148,19 @@ class StoreMaintenanceRecordRequest extends FormRequest
                 && $serviceKilometers !== null
             ) {
                 $vehicle = \App\Models\Vehicle::find(
-                    $vehicleId
+                    $this->input('vehicle_id')
                 );
 
                 if (
                     $vehicle
+                    && $this->filled('service_kilometers')
                     && $vehicle->current_kilometers !== null
-                    && (int) $serviceKilometers
+                    && (int) $this->input('service_kilometers')
                     < $vehicle->current_kilometers
                 ) {
                     $validator->errors()->add(
                         'service_kilometers',
-                        'Service kilometers cannot be lower than the vehicle current kilometers.'
+                        'Service kilometers cannot be lower than the vehicle current kilometer reading.'
                     );
                 }
             }

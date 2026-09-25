@@ -5,6 +5,7 @@ namespace App\Policies;
 use App\Enums\UserRole;
 use App\Models\MaintenanceRecord;
 use App\Models\User;
+use App\Enums\MaintenanceStatus;
 
 class MaintenanceRecordPolicy
 {
@@ -64,6 +65,8 @@ class MaintenanceRecordPolicy
         User $user,
         MaintenanceRecord $maintenance
     ): bool {
-        return $user->role === UserRole::Admin;
+        return $user->role === UserRole::Admin && $maintenance->status !==
+            MaintenanceStatus::Completed;
+        
     }
 }
