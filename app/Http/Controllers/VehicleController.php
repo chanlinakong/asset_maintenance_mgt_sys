@@ -50,7 +50,9 @@ class VehicleController extends Controller
 
     public function create(): View
     {
+        $vehicle = new Vehicle();
         return view('vehicles.create', [
+            'vehicle' => $vehicle,
             'statuses' => VehicleStatus::cases(),
         ]);
     }
@@ -100,7 +102,7 @@ class VehicleController extends Controller
                         'The current kilometer reading cannot be lower than the previous reading.',
                 ]);
         }
-        
+
         $vehicle->update($request->validated());
 
         return redirect()
@@ -110,6 +112,12 @@ class VehicleController extends Controller
 
     public function destroy(Vehicle $vehicle): RedirectResponse
     {
+        if ($vehicle->status === VehicleStatus::Maintenance) {
+            return redirect()
+                ->route('vehicles.index')
+                ->with('error', 'This vehicle cannot be deleted while maintenance is in progress.');
+        }
+
         $vehicle->delete();
 
         return redirect()

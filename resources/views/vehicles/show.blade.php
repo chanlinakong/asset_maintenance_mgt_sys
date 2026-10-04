@@ -135,6 +135,17 @@
                     </div>
 
 
+                     <div>
+                        <p class="text-sm text-gray-500">
+                            Current Kilometers
+                        </p>
+
+                        <p class="font-medium">
+                            {{ $vehicle->current_kilometers ?? '-' }}
+                        </p>
+                    </div>
+
+
                     <div>
                         <p class="text-sm text-gray-500">
                             Purchase Date
@@ -408,7 +419,7 @@
     </div>
 
     @if(auth()->user()->role->value === 'admin')
-        <div class="rounded-xl border border-red-200 bg-white p-6">
+        <div class="rounded-xl border border-red-200 bg-white p-6 mt-5">
 
             <h2 class="font-semibold text-red-700">
                 Remove Vehicle

@@ -32,6 +32,10 @@
             <div class="rounded-lg bg-green-50 px-4 py-3 text-green-700">
                 {{ session('success') }}
             </div>
+        @elseif(session('error'))
+            <div class="rounded-lg bg-red-50 px-4 py-3 text-red-700">
+                {{ session('error') }}
+            </div>
         @endif
 
 
@@ -44,8 +48,8 @@
 
                         <input type="search" name="search" value="{{ $search }}"
                             placeholder="Search by code, name, type, brand..." class="w-full rounded-lg border border-gray-300 px-4 py-2
-                                       focus:border-gray-500 focus:outline-none
-                                       sm:max-w-md">
+                                           focus:border-gray-500 focus:outline-none
+                                           sm:max-w-md">
 
                         <select name="status" class="rounded-lg border border-gray-300 px-4 py-2">
                             <option value="">All Statuses</option>
@@ -60,13 +64,13 @@
                         </select>
 
                         <button type="submit" class="rounded-lg bg-gray-900 px-5 py-2 text-white
-                                       hover:bg-gray-800">
+                                           hover:bg-gray-800">
                             Search
                         </button>
 
                         @if($search)
                             <a href="{{ route('vehicles.index') }}" class="rounded-lg border border-gray-300 px-5 py-2
-                                                               text-center hover:bg-gray-50">
+                                                                       text-center hover:bg-gray-50">
                                 Clear
                             </a>
                         @endif

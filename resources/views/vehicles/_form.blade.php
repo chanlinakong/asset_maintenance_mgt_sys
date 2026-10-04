@@ -55,6 +55,13 @@
 
         <input type="text" name="brand" value="{{ old('brand', $vehicle->brand ?? '') }}"
             class="w-full rounded-lg border border-gray-300 px-3 py-2">
+
+        @error('brand')
+            <p class="mt-1 text-sm text-red-600">
+                {{ $message }}
+            </p>
+        @enderror
+
     </div>
 
 
@@ -65,6 +72,12 @@
 
         <input type="text" name="model" value="{{ old('model', $vehicle->model ?? '') }}"
             class="w-full rounded-lg border border-gray-300 px-3 py-2">
+
+        @error('model')
+            <p class="mt-1 text-sm text-red-600">
+                {{ $message }}
+            </p>
+        @enderror
     </div>
 
 
@@ -90,8 +103,8 @@
             Current Kilometers
         </label>
 
-        <input type="number" name="current_kilometers" id="current_kilometers" value="{{ old('current_kilometers',$vehicle->current_kilometers) }}"
-            min="0" step="1"
+        <input type="number" name="current_kilometers" id="current_kilometers"
+            value="{{ old('current_kilometers', $vehicle->current_kilometers) }}" min="0" step="1"
             class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500"
             placeholder="e.g. 50000">
 
@@ -107,34 +120,54 @@
     </div>
 
 
-    <div>
-        <label class="mb-2 block text-sm font-medium">
-            Status
-        </label>
 
-        <select name="status" class="w-full rounded-lg border border-gray-300 px-3 py-2">
-            @foreach($statuses as $status)
-                    <option value="{{ $status->value }}" @selected(
+    @if ($vehicle->exists)
+        @if ($vehicle->status !== \App\Enums\VehicleStatus::Maintenance)
+            <div>
+                <label class="mb-2 block text-sm font-medium">
+                    Status
+                </label>
+
+                <input type="hidden" name="status" value="active">
+
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" name="status" value="out_of_service" @checked(
                         old(
                             'status',
-                            isset($vehicle)
-                            ? $vehicle->status->value
-                            : 'active'
-                        ) === $status->value
-                    )>
-                        {{ str($status->value)
-                ->replace('_', ' ')
-                ->title() }}
-                    </option>
-            @endforeach
-        </select>
+                            $vehicle->status?->value
+                        ) === 'out_of_service'
+                    )
+                        class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
 
-        @error('status')
-            <p class="mt-1 text-sm text-red-600">
-                {{ $message }}
-            </p>
-        @enderror
-    </div>
+                    <span class="text-sm text-gray-700">
+                        Out of Service
+                    </span>
+                </label>
+
+                @error('status')
+                    <p class="mt-1 text-sm text-red-600">
+                        {{ $message }}
+                    </p>
+                @enderror
+            </div>
+        @else
+            <div>
+                <label class="mb-2 block text-sm font-medium">
+                    Status
+                </label>
+
+                <p class="text-sm font-medium text-gray-700">
+                    Maintenance
+                </p>
+
+                <p class="mt-1 text-sm text-gray-500">
+                    Status is managed by the active maintenance record.
+                </p>
+            </div>
+        @endif
+    @endif
+
+
 
 
     <div>

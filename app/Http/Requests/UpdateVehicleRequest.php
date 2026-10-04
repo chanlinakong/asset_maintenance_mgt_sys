@@ -61,6 +61,7 @@ class UpdateVehicleRequest extends FormRequest
             ],
 
             'status' => [
+                'sometimes',
                 'required',
                 Rule::enum(VehicleStatus::class),
             ],

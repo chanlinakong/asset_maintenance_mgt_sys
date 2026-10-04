@@ -55,8 +55,7 @@ class StoreVehicleRequest extends FormRequest
             ],
 
             'status' => [
-                'required',
-                Rule::enum(VehicleStatus::class),
+                VehicleStatus::Active->value,
             ],
 
             'purchase_date' => [
