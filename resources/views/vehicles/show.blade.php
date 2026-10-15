@@ -128,14 +128,14 @@
                             'bg-red-100 text-red-700' =>
                                 $vehicle->status->value === 'out_of_service',
                         ])>
-              {{ str($vehicle->status->value)
+                  {{ str($vehicle->status->value)
         ->replace('_', ' ')
         ->title() }}
                         </span>
                     </div>
 
 
-                     <div>
+                    <div>
                         <p class="text-sm text-gray-500">
                             Current Kilometers
                         </p>
@@ -190,11 +190,13 @@
                         Maintenance records for this vehicle.
                     </p>
                 </div>
-
-                <a href="{{ route('maintenance.create') }}"
-                    class="rounded-lg bg-gray-900 px-4 py-2 text-center text-sm font-medium text-white hover:bg-gray-800">
-                    + Report Maintenance
-                </a>
+                
+                @if ($vehicle->maintenanceRecords->isNotEmpty() && $vehicle->status->value !== 'out_of_service')
+                    <a href="{{ route('maintenance.create', ['vehicle_id' => $vehicle->id]) }}"
+                        class="rounded-lg bg-gray-900 px-4 py-2 text-center text-sm font-medium text-white hover:bg-gray-800">
+                        + Report Maintenance
+                    </a>
+                @endif
 
             </div>
 
@@ -406,7 +408,7 @@
                         <a href="{{ route('maintenance.create', [
                     'vehicle_id' => $vehicle->id
                 ]) }}" class="mt-4 inline-block rounded-lg bg-gray-900 px-4 py-2
-                                                text-sm font-medium text-white hover:bg-gray-800">
+                                                                        text-sm font-medium text-white hover:bg-gray-800">
                             + Report Maintenance
                         </a>
 

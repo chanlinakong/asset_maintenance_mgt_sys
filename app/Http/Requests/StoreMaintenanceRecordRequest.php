@@ -42,8 +42,7 @@ class StoreMaintenanceRecordRequest extends FormRequest
             ],
 
             'status' => [
-                'required',
-                Rule::enum(MaintenanceStatus::class),
+                MaintenanceStatus::Pending->value,
             ],
 
             'reported_at' => [
@@ -66,13 +65,6 @@ class StoreMaintenanceRecordRequest extends FormRequest
                 'required_if:status,completed',
                 'prohibited_if:status,pending,cancelled',
             ],
-
-            // 'cost' => [
-            //     'required',
-            //     'numeric',
-            //     'min:0',
-            //     'max:999999999999.99',
-            // ],
 
             'service_kilometers' => [
                 'nullable',
@@ -101,23 +93,7 @@ class StoreMaintenanceRecordRequest extends FormRequest
                         )->where('is_active', true);
                     }),
             ],
-            'parts_cost' => [
-                'nullable',
-                'numeric',
-                'min:0',
-            ],
-
-            'labor_cost' => [
-                'nullable',
-                'numeric',
-                'min:0',
-            ],
-
-            'other_cost' => [
-                'nullable',
-                'numeric',
-                'min:0',
-            ],
+            
         ];
     }
     public function withValidator(Validator $validator): void

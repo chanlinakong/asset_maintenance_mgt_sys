@@ -15,20 +15,16 @@
             </option>
 
             @foreach($vehicles as $vehicle)
-
                 <option value="{{ $vehicle->id }}" @selected(
                     old(
                         'vehicle_id',
                         $maintenanceSchedule?->vehicle_id
+                        ?? request('vehicle_id')
                     ) == $vehicle->id
                 )>
-                    {{ $vehicle->vehicle_code }}
-                    -
-                    {{ $vehicle->name }}
+                    {{ $vehicle->vehicle_code }} - {{ $vehicle->name }}
                 </option>
-
             @endforeach
-
         </select>
 
         @error('vehicle_id')

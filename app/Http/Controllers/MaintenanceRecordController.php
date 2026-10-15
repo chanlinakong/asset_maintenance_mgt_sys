@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use App\Services\MaintenanceService;
 use Illuminate\Support\Facades\Gate;
 use App\Models\Part;
+use App\Enums\VehicleStatus;
 
 class MaintenanceRecordController extends Controller
 {
@@ -155,8 +156,9 @@ class MaintenanceRecordController extends Controller
         }
 
         return view('maintenance.create', [
-            'vehicles' => Vehicle::orderBy('vehicle_code')->get(),
-
+            'vehicles' => Vehicle::where('status', '!=', VehicleStatus::OutOfService->value)
+                ->orderBy('vehicle_code')
+                ->get(),
             'selectedVehicle' => $selectedVehicle,
 
             'selectedSchedule' => $selectedSchedule,
