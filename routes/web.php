@@ -76,6 +76,11 @@ Route::middleware(['auth', 'role:admin,staff'])->group(function () {
         MaintenanceRecordController::class
     )->parameters(['maintenance' => 'maintenance',]);
 
+    Route::patch(
+        '/maintenance-schedules/{maintenanceSchedule}/toggle-active',
+        [MaintenanceScheduleController::class, 'toggleActive']
+    )->name('maintenance-schedules.toggle-active');
+
     Route::resource(
         'maintenance-schedules',
         MaintenanceScheduleController::class

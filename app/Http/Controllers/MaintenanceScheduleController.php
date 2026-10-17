@@ -70,8 +70,11 @@ class MaintenanceScheduleController extends Controller
         ]);
     }
 
-    public function store(StoreMaintenanceScheduleRequest $request): RedirectResponse
-    {
+
+    public function store(
+        StoreMaintenanceScheduleRequest $request
+    ): RedirectResponse {
+
         $data = $request->validated();
 
         if (
@@ -86,22 +89,12 @@ class MaintenanceScheduleController extends Controller
                 ]);
         }
 
-        $nextDueDate = null;
+        // No known service history for a new schedule.
+        $nextDueDate = !empty($data['interval_days'])
+            ? today()->addDays((int) $data['interval_days'])
+            : null;
 
-        if (
-            !empty($data['last_service_date'])
-            && !empty($data['interval_days'])
-        ) {
-            $nextDueDate = \Carbon\Carbon::parse(
-                $data['last_service_date']
-            )->addDays(
-                    (int) $data['interval_days']
-                );
-        } elseif (!empty($data['interval_days'])) {
-            $nextDueDate = today()->addDays((int) $data['interval_days']);
-        }
-
-        $schedule = MaintenanceSchedule::create([
+        MaintenanceSchedule::create([
             ...$data,
             'last_service_date' => null,
             'next_due_date' => $nextDueDate,
@@ -112,11 +105,9 @@ class MaintenanceScheduleController extends Controller
 
         return redirect()
             ->route('maintenance-schedules.index')
-            ->with(
-                'success',
-                'Maintenance schedule created successfully.'
-            );
+            ->with('success', 'Maintenance schedule created successfully.');
     }
+
 
     public function show(
         MaintenanceSchedule $maintenanceSchedule
@@ -143,67 +134,79 @@ class MaintenanceScheduleController extends Controller
         ]);
     }
 
+
     public function update(
         UpdateMaintenanceScheduleRequest $request,
         MaintenanceSchedule $maintenanceSchedule
     ): RedirectResponse {
-        
+
         $data = $request->validated();
 
+        // Calculate next due date.
+        $data['next_due_date'] = null;
+
         if (
-            !empty($data['last_service_date'])
-            && !empty($data['interval_days'])
+            !is_null($data['last_service_date'] ?? null)
+            && !is_null($data['interval_days'] ?? null)
         ) {
             $data['next_due_date'] = \Carbon\Carbon::parse(
                 $data['last_service_date']
-            )->addDays(
-                    (int) $data['interval_days']
-                );
-        } else {
-            $data['next_due_date'] = null;
+            )->addDays((int) $data['interval_days']);
         }
 
+        // Calculate next due kilometers.
+        $data['next_due_kilometers'] = null;
+
         if (
-            !empty($data['last_service_kilometers'])
-            && !empty($data['interval_kilometers'])
+            !is_null($data['last_service_kilometers'] ?? null)
+            && !is_null($data['interval_kilometers'] ?? null)
         ) {
             $data['next_due_kilometers'] =
                 (int) $data['last_service_kilometers']
                 + (int) $data['interval_kilometers'];
-        } else {
-            $data['next_due_kilometers'] = null;
         }
 
         $maintenanceSchedule->update($data);
 
         return redirect()
-            ->route(
-                'maintenance-schedules.show',
-                $maintenanceSchedule
-            )
+            ->route('maintenance-schedules.show', $maintenanceSchedule)
+            ->with('success', 'Maintenance schedule updated successfully.');
+    }
+
+
+    public function toggleActive(
+        MaintenanceSchedule $maintenanceSchedule
+    ): RedirectResponse {
+        Gate::authorize('update', $maintenanceSchedule);
+
+        $newStatus = !$maintenanceSchedule->is_active;
+
+        $maintenanceSchedule->update([
+            'is_active' => $newStatus,
+        ]);
+
+        return redirect()
+            ->route('maintenance-schedules.show', $maintenanceSchedule)
             ->with(
                 'success',
-                'Maintenance schedule updated successfully.'
+                $newStatus
+                ? 'Maintenance schedule reactivated successfully.'
+                : 'Maintenance schedule deactivated successfully.'
             );
     }
 
     public function destroy(
         MaintenanceSchedule $maintenanceSchedule
     ): RedirectResponse {
-        Gate::authorize(
-            'delete',
-            $maintenanceSchedule
-        );
+        Gate::authorize('delete', $maintenanceSchedule);
 
-        $maintenanceSchedule->update([
-            'is_active' => false,
-        ]);
+        $maintenanceSchedule->delete();
 
         return redirect()
             ->route('maintenance-schedules.index')
             ->with(
                 'success',
-                'Maintenance schedule deactivated successfully.'
+                'Maintenance schedule deleted successfully.'
             );
     }
 

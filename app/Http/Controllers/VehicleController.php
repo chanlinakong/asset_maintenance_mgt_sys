@@ -122,6 +122,6 @@ class VehicleController extends Controller
 
         return redirect()
             ->route('vehicles.index')
-            ->with('success', 'Vehicle removed successfully.');
+            ->with('success', 'Vehicle deleted successfully.');
     }
 }

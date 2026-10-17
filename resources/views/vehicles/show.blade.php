@@ -424,21 +424,21 @@
         <div class="rounded-xl border border-red-200 bg-white p-6 mt-5">
 
             <h2 class="font-semibold text-red-700">
-                Remove Vehicle
+                Delete Vehicle
             </h2>
 
             <p class="mt-1 text-sm text-gray-500">
-                This vehicle will be removed from active records.
+                This vehicle will be deleted and removed from active records.
             </p>
 
             <form method="POST" action="{{ route('vehicles.destroy', $vehicle) }}" class="mt-4"
-                onsubmit="return confirm('Are you sure you want to remove this vehicle?')">
+                onsubmit="return confirm('Are you sure you want to delete this vehicle?')">
 
                 @csrf
                 @method('DELETE')
 
                 <button type="submit" class="rounded-lg bg-red-600 px-4 py-2 text-white">
-                    Remove Vehicle
+                    Delete Vehicle
                 </button>
 
             </form>

@@ -5,6 +5,8 @@ namespace App\Http\Requests;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Support\Str;
+use App\Models\MaintenanceSchedule;
 
 class StoreMaintenanceScheduleRequest extends FormRequest
 {
@@ -66,6 +68,24 @@ class StoreMaintenanceScheduleRequest extends FormRequest
     ): void {
         $validator->after(function (Validator $validator) {
 
+            $normalizedTitle = Str::lower(trim($this->input('title')));
+
+            $duplicateExists = MaintenanceSchedule::query()
+                ->where('vehicle_id', $this->input('vehicle_id'))
+                ->where('is_active', true)
+                ->whereRaw('LOWER(TRIM(title)) = ?', [$normalizedTitle])
+                ->when($this->route('maintenance_schedule'), function ($query, $schedule) {
+                    $query->where('id', '!=', $schedule->id);
+                })
+                ->exists();
+            
+            if ($duplicateExists) {
+                $validator->errors()->add(
+                    'title',
+                    'A maintenance schedule with this title already exists for the selected vehicle.'
+                );
+            }
+
             if (
                 !$this->filled('interval_days')
                 && !$this->filled('interval_kilometers')
@@ -75,6 +95,8 @@ class StoreMaintenanceScheduleRequest extends FormRequest
                     'At least one maintenance interval is required.'
                 );
             }
+
+
         });
     }
 }

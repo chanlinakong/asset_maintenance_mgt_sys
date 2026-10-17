@@ -4,10 +4,10 @@
 
 @section('content')
 
-@php
-    $activeMaintenance =
-        $maintenanceSchedule->activeMaintenance();
-@endphp
+    @php
+        $activeMaintenance =
+            $maintenanceSchedule->activeMaintenance();
+    @endphp
 
     <div class="space-y-6">
 
@@ -220,7 +220,7 @@
                     {{ $maintenanceSchedule->last_service_kilometers !== null
         ? number_format($maintenanceSchedule->last_service_kilometers) . ' km'
         : '—'
-                                    }}
+                                                    }}
                 </p>
 
             </div>
@@ -236,47 +236,84 @@
                     {{ $maintenanceSchedule->next_due_kilometers !== null
         ? number_format($maintenanceSchedule->next_due_kilometers) . ' km'
         : '—'
-                                    }}
+                                                    }}
                 </p>
 
             </div>
 
         </div>
 
+
+
         {{-- Mileage Status --}}
         @if(
+                $maintenanceSchedule->vehicle->current_kilometers !== null &&
                 $maintenanceSchedule->next_due_kilometers !== null
-                && $maintenanceSchedule->vehicle->current_kilometers !== null
             )
-
             @php
-                $remainingKm = $maintenanceSchedule->kilometersRemaining(
-                    $maintenanceSchedule->vehicle->current_kilometers
-                );
+                $currentKm = $maintenanceSchedule->vehicle->current_kilometers;
+
+                $remainingKm = $maintenanceSchedule->kilometersRemaining($currentKm);
             @endphp
 
-            <div class="rounded-xl bg-white p-5 shadow-sm">
+            <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
 
-                <p class="text-sm text-gray-500">
-                    Mileage Status
-                </p>
+                {{-- Header --}}
+                <div class="flex items-center gap-3">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                                d="M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
 
-                @if($remainingKm < 0)
+                    <div>
+                        <h3 class="font-semibold text-gray-900">
+                            Mileage Information
+                        </h3>
+                        <p class="text-sm text-gray-500">
+                            Current vehicle mileage
+                        </p>
+                    </div>
+                </div>
 
-                    <p class="mt-2 font-semibold text-red-700">
-                        {{ number_format(abs($remainingKm)) }} km overdue
+                {{-- Current Mileage --}}
+                <div class="mt-5 rounded-lg bg-gray-50 p-4">
+                    <p class="text-sm text-gray-500">
+                        Current Mileage
                     </p>
 
-                @else
+                    <p class="mt-1 text-2xl font-bold tracking-tight text-gray-900">
+                        {{ number_format($currentKm) }}
+                        <span class="text-sm font-medium text-gray-500">km</span>
+                    </p>
+                </div>
 
-                    <p class="mt-2 font-semibold text-gray-900">
-                        {{ number_format($remainingKm) }} km remaining
+                {{-- Mileage Status --}}
+                <div class="mt-4">
+                    <p class="text-sm text-gray-500">
+                        Mileage Status
                     </p>
 
-                @endif
+                    @if($remainingKm < 0)
+                        <p class="mt-1 font-semibold text-red-700">
+                            {{ number_format(abs($remainingKm)) }} km overdue
+                        </p>
+                    @elseif($remainingKm == 0)
+                        <p class="mt-1 font-semibold text-amber-700">
+                            Service due now
+                        </p>
+                    @else
+                        <p class="mt-1 font-semibold text-green-700">
+                            {{ number_format($remainingKm) }} km remaining
+                        </p>
+                    @endif
+                </div>
 
             </div>
         @endif
+
+
 
         {{-- Interval --}}
         <div class="rounded-xl bg-white p-6 shadow-sm">
@@ -418,5 +455,66 @@
         </div>
 
     </div>
+
+
+    @if (auth()->user()->role->value === 'admin')
+        <div class="mt-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+            <h2 class="font-semibold text-gray-900">Schedule Management</h2>
+            <p class="mt-1 text-sm text-gray-500">
+                Activate, deactivate, or delete this schedule.
+            </p>
+
+            <div class="mt-4 grid gap-4 sm:grid-cols-2">
+
+                {{-- Activate / Deactivate --}}
+                <div class="rounded-lg border border-gray-200 p-4">
+                    <h3 class="text-sm font-semibold text-gray-900">
+                        {{ $maintenanceSchedule->is_active ? 'Deactivate Schedule' : 'Reactivate Schedule' }}
+                    </h3>
+
+                    <p class="mt-1 text-sm text-gray-500">
+                        {{ $maintenanceSchedule->is_active
+                ? 'Stop future use while preserving history.'
+                : 'Allow future maintenance planning.' }}
+                    </p>
+
+                    <form method="POST" action="{{ route('maintenance-schedules.toggle-active', $maintenanceSchedule) }}"
+                        class="mt-3" onsubmit="return confirm('Are you sure?')">
+                        @csrf
+                        @method('PATCH')
+
+                        <button type="submit" class="w-full rounded-lg px-4 py-2 text-sm font-medium text-white
+                                        {{ $maintenanceSchedule->is_active
+                ? 'bg-amber-600 hover:bg-amber-700'
+                : 'bg-emerald-600 hover:bg-emerald-700' }}">
+                            {{ $maintenanceSchedule->is_active ? 'Deactivate' : 'Reactivate' }}
+                        </button>
+                    </form>
+                </div>
+
+                {{-- Soft Delete --}}
+                <div class="rounded-lg border border-gray-200 p-4">
+                    <h3 class="text-sm font-semibold text-gray-900">Delete Schedule</h3>
+
+                    <p class="mt-1 text-sm text-gray-500">
+                        Remove this schedule from normal listings.
+                    </p>
+
+                    <form method="POST" action="{{ route('maintenance-schedules.destroy', $maintenanceSchedule) }}" class="mt-3"
+                        onsubmit="return confirm('Delete this schedule?')">
+                        @csrf
+                        @method('DELETE')
+
+                        <button type="submit"
+                            class="w-full rounded-lg px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700">
+                            Delete
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    @endif
+
 
 @endsection
