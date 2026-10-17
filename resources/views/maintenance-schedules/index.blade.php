@@ -47,6 +47,23 @@
                     </option>
                 </select>
 
+                {{-- New Due Status Search --}}
+                <select name="due_status" class="rounded-lg border-gray-300">
+                    <option value="">All Due Status</option>
+
+                    <option value="up_to_date" @selected(request('due_status') === 'up_to_date')>
+                        Up to Date
+                    </option>
+
+                    <option value="due_soon" @selected(request('due_status') === 'due_soon')>
+                        Due Soon
+                    </option>
+
+                    <option value="overdue" @selected(request('due_status') === 'overdue')>
+                        Overdue
+                    </option>
+                </select>
+
                 <button type="submit" class="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white">
                     Search
                 </button>
@@ -88,69 +105,69 @@
 
                         @forelse($schedules as $schedule)
 
-                                            <tr>
+                            <tr>
 
-                                                <td class="px-6 py-4">
-                                                    <p class="font-medium text-gray-900">
-                                                        {{ $schedule->vehicle->vehicle_code }}
-                                                    </p>
+                                <td class="px-6 py-4">
+                                    <p class="font-medium text-gray-900">
+                                        {{ $schedule->vehicle->vehicle_code }}
+                                    </p>
 
-                                                    <p class="text-sm text-gray-500">
-                                                        {{ $schedule->vehicle->name }}
-                                                    </p>
-                                                </td>
+                                    <p class="text-sm text-gray-500">
+                                        {{ $schedule->vehicle->name }}
+                                    </p>
+                                </td>
 
-                                                <td class="px-6 py-4">
-                                                    <p class="font-medium text-gray-900">
-                                                        {{ $schedule->title }}
-                                                    </p>
+                                <td class="px-6 py-4">
+                                    <p class="font-medium text-gray-900">
+                                        {{ $schedule->title }}
+                                    </p>
 
-                                                    <p class="text-sm text-gray-500">
-                                                        @if($schedule->interval_days)
-                                                            Every {{ $schedule->interval_days }} days
-                                                        @endif
+                                    <p class="text-sm text-gray-500">
+                                        @if($schedule->interval_days)
+                                            Every {{ $schedule->interval_days }} days
+                                        @endif
 
-                                                        @if(
-                                                                $schedule->interval_days
-                                                                && $schedule->interval_kilometers
-                                                            )
-                                                            ·
-                                                        @endif
+                                        @if(
+                                                $schedule->interval_days
+                                                && $schedule->interval_kilometers
+                                            )
+                                            ·
+                                        @endif
 
-                                                        @if($schedule->interval_kilometers)
-                                                            Every {{ number_format($schedule->interval_kilometers) }} km
-                                                        @endif
-                                                    </p>
-                                                </td>
+                                        @if($schedule->interval_kilometers)
+                                            Every {{ number_format($schedule->interval_kilometers) }} km
+                                        @endif
+                                    </p>
+                                </td>
 
-                                                <td class="px-6 py-4 text-sm text-gray-700">
-                                                    {{ $schedule->next_due_date?->format('d M Y') ?? '—' }}
-                                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-700">
+                                    {{ $schedule->next_due_date?->format('d M Y') ?? '—' }}
+                                </td>
 
-                                                <td class="px-6 py-4">
+                                <td class="px-6 py-4">
 
-                                                    @php
-                                                        $currentKilometers = $schedule->vehicle?->current_kilometers;
-                                                    @endphp
+                                    @php
+                                        $currentKilometers = $schedule->vehicle?->current_kilometers;
+                                    @endphp
 
-                                                    <span class="rounded-full px-3 py-1 text-xs font-semibold {{ 
-                                $schedule->dueStatusClasses($currentKilometers)
-                            }}">
-                                                        {{ $schedule->dueStatusLabel($currentKilometers) }}
-                                                    </span>
+                                    <span class="rounded-full px-3 py-1 text-xs font-semibold {{ 
+                                        $schedule->dueStatusClasses($currentKilometers)
+                                    }}">
+                                        {{ $schedule->dueStatusLabel($currentKilometers) }}
+                                    </span>
 
-                                                </td>
+                                </td>
 
-                                                <td class="px-6 py-4 text-right">
+                                <td class="px-6 py-4 text-right">
 
-                                                    <a href="{{ route('maintenance-schedules.show', $schedule) }}"
-                                                        class="text-sm font-medium text-gray-700 hover:text-gray-900">
-                                                        View
-                                                    </a>
+                                    <a href="{{ route('maintenance-schedules.show', $schedule) }}"
+                                        class="text-sm font-medium text-gray-700 hover:text-gray-900">
+                                        View
+                                    </a>
 
-                                                </td>
+                                </td>
 
-                                            </tr>
+                            </tr>
 
                         @empty
 

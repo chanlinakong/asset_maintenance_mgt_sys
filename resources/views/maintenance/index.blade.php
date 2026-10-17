@@ -35,6 +35,14 @@
 
         @endif
 
+        @error('from')
+            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+        @enderror
+
+        @error('to')
+            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+        @enderror
+
 
         <div class="overflow-hidden rounded-xl bg-white shadow-sm">
 
@@ -46,6 +54,72 @@
                         {{-- Search --}}
                         <input type="search" name="search" value="{{ $search }}" placeholder="Search maintenance..."
                             class="rounded-lg border border-gray-300 px-4 py-2">
+
+                        {{-- Date Period --}}
+                        <select name="period" id="period" class="rounded-lg border border-gray-300 px-4 py-2">
+                            <option value="">All Dates</option>
+
+                            <option value="today" @selected(request('period') === 'today')>
+                                Today
+                            </option>
+
+                            <option value="yesterday" @selected(request('period') === 'yesterday')>
+                                Yesterday
+                            </option>
+
+                            <option value="this_month" @selected(request('period') === 'this_month')>
+                                This Month
+                            </option>
+
+                            <option value="last_month" @selected(request('period') === 'last_month')>
+                                Last Month
+                            </option>
+
+                            <option value="this_year" @selected(request('period') === 'this_year')>
+                                This Year
+                            </option>
+
+                            <option value="last_year" @selected(request('period') === 'last_year')>
+                                Last Year
+                            </option>
+
+                            <option value="custom" @selected(request('period') === 'custom')>
+                                Custom Date Range
+                            </option>
+                        </select>
+
+                        {{-- From Date --}}
+                        <!-- <input type="date" name="from" value="{{ request('from') }}"
+                                    class="rounded-lg border border-gray-300 px-4 py-2" aria-label="From date"> -->
+
+                        {{-- To Date --}}
+                        <!-- <input type="date" name="to" value="{{ request('to') }}"
+                                    class="rounded-lg border border-gray-300 px-4 py-2" aria-label="To date"> -->
+
+                        <div id="custom-date-fields" class="{{ request('period') === 'custom' ? '' : 'hidden' }}">
+
+                            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                <div>
+                                    <label for="from" class="mb-1 block text-sm font-medium text-gray-700">
+                                        From Date
+                                    </label>
+
+                                    <input type="date" name="from" id="from" value="{{ request('from') }}"
+                                        max="{{ request('to') }}"
+                                        class="w-full rounded-lg border border-gray-300 px-3 py-2">
+                                </div>
+
+                                <div>
+                                    <label for="to" class="mb-1 block text-sm font-medium text-gray-700">
+                                        To Date
+                                    </label>
+
+                                    <input type="date" name="to" id="to" value="{{ request('to') }}"
+                                        min="{{ request('from') }}"
+                                        class="w-full rounded-lg border border-gray-300 px-3 py-2">
+                                </div>
+                            </div>
+                        </div>
 
                         {{-- Vehicle --}}
                         <select name="vehicle_id" class="rounded-lg border border-gray-300 px-4 py-2">
@@ -90,13 +164,13 @@
                     <div class="mt-3 flex flex-wrap gap-2">
 
                         <button type="submit" class="rounded-lg bg-gray-900 px-5 py-2 text-sm
-                                                   font-medium text-white hover:bg-gray-800">
+                                                                   font-medium text-white hover:bg-gray-800">
                             Filter
                         </button>
 
-                        @if($search || $status || $type || $vehicleId)
-                            <a href="{{ route('maintenance.index') }}" class="rounded-lg border border-gray-300 px-5 py-2
-                                                                                       text-sm font-medium hover:bg-gray-50">
+                        @if($search || $status || $type || $vehicleId || request('period') || request('from') || request('to'))
+                            <a href="{{ route('maintenance.index') }}"
+                                class="rounded-lg border border-gray-300 px-5 py-2 text-sm font-medium hover:bg-gray-50">
                                 Clear
                             </a>
                         @endif
@@ -161,8 +235,9 @@
                                                 @endphp
 
                                                 <td class="px-6 py-4">
-                                                    <span class="inline-flex rounded-full bg-gray-100 px-3 py-1
-                                                           text-xs font-semibold text-gray-700">
+                                                    <span
+                                                        class="inline-flex rounded-full bg-gray-100 px-3 py-1
+                                                                                                                                                           text-xs font-semibold text-gray-700">
                                                         {{ str($maintenanceType->value)
                                 ->replace('_', ' ')
                                 ->title() }}
@@ -265,3 +340,37 @@
     </div>
 
 @endsection
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const period = document.getElementById('period');
+        const dateFields = document.getElementById('custom-date-fields');
+        const from = document.getElementById('from');
+        const to = document.getElementById('to');
+
+        if (!period || !dateFields) return;
+
+        function updateDateFields() {
+            const isCustom = period.value === 'custom';
+
+            dateFields.classList.toggle('hidden', !isCustom);
+
+            if (from && to) {
+                from.required = isCustom;
+                to.required = isCustom;
+            }
+        }
+
+        period.addEventListener('change', updateDateFields);
+
+        from?.addEventListener('change', function () {
+            to.min = from.value;
+        });
+
+        to?.addEventListener('change', function () {
+            from.max = to.value;
+        });
+
+        updateDateFields();
+    });
+</script>

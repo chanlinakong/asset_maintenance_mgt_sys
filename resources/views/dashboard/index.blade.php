@@ -60,7 +60,7 @@
 
 
             {{-- Active Vehicles --}}
-            <a href="{{ route('vehicles.index') }}"
+            <a href="{{ route('vehicles.index', ['status' => 'active']) }}"
                 class="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-green-200 hover:shadow-md">
                 <div class="flex items-start justify-between">
 
@@ -118,7 +118,7 @@
 
 
             {{-- Out of Service --}}
-            <a href="{{ route('vehicles.index') }}"
+            <a href="{{ route('vehicles.index', ['status' => 'out_of_service']) }}"
                 class="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-red-200 hover:shadow-md">
                 <div class="flex items-start justify-between">
 
@@ -170,7 +170,7 @@
 
 
             {{-- Monthly Maintenance --}}
-            <a href="{{ route('maintenance.index') }}"
+            <a href="{{ route('maintenance.index', ['period' => 'this_month']) }}"
                 class="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-amber-200 hover:shadow-md">
                 <p class="text-sm font-medium text-gray-500">
                     This Month's Maintenance
@@ -187,7 +187,7 @@
 
 
             {{-- Monthly Cost --}}
-            <a href="{{ route('reports.index') }}"
+            <a href="{{ route('reports.index', ['period' => 'this_month']) }}"
                 class="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-green-200 hover:shadow-md">
                 <p class="text-sm font-medium text-gray-500">
                     This Month's Cost
@@ -204,7 +204,7 @@
 
 
             {{-- Overdue --}}
-            <a href="{{ route('maintenance-schedules.index') }}"
+            <a href="{{ route('maintenance-schedules.index', ['due_status' => 'overdue']) }}"
                 class="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-red-200 hover:shadow-md">
                 <p class="text-sm font-medium text-gray-500">
                     Overdue Maintenance
@@ -360,7 +360,7 @@
                         </div>
 
                         @if($overdueSchedules > 3)
-                            <a href="{{ route('maintenance-schedules.index') }}"
+                            <a href="{{ route('maintenance-schedules.index', ['due_status' => 'overdue']) }}"
                                 class="mt-4 block text-center text-sm font-medium text-blue-600 hover:text-blue-800">
                                 See all {{ $overdueSchedules }} over-due schedules →
                             </a>
@@ -686,7 +686,7 @@
                             </p>
                         </div>
 
-                        <a href="{{ route('maintenance-schedules.index') }}"
+                        <a href="{{ route('maintenance-schedules.index', ['due_status' => 'due_soon']) }}"
                             class="text-xs font-semibold text-blue-600 hover:text-blue-700">
                             View all
                         </a>

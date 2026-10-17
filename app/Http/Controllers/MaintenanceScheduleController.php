@@ -15,43 +15,114 @@ class MaintenanceScheduleController extends Controller
 {
     public function index(Request $request): View
     {
-        $search = $request
-            ->string('search')
-            ->trim()
-            ->toString();
+        $search = $request->string('search')->trim()->toString();
+        $status = $request->string('status')->trim()->toString();
+        $dueStatus = $request->string('due_status')->trim()->toString();
 
-        $status = $request
-            ->string('status')
-            ->trim()
-            ->toString();
+        $today = today()->toDateString();
+        $warningDate = today()->addDays(30)->toDateString();
 
         $schedules = MaintenanceSchedule::query()
             ->with('vehicle')
+
+            // Search by schedule or vehicle
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
-                    $query
-                        ->where('title', 'like', "%{$search}%")
+                    $query->where('title', 'like', "%{$search}%")
                         ->orWhereHas('vehicle', function ($query) use ($search) {
-                            $query
-                                ->where(
-                                    'vehicle_code',
-                                    'like',
-                                    "%{$search}%"
-                                )
-                                ->orWhere(
-                                    'name',
-                                    'like',
-                                    "%{$search}%"
-                                );
+                            $query->where('vehicle_code', 'like', "%{$search}%")
+                                ->orWhere('name', 'like', "%{$search}%");
                         });
                 });
             })
+
+            // Existing Active / Inactive filter
             ->when($status === 'active', function ($query) {
                 $query->where('is_active', true);
             })
             ->when($status === 'inactive', function ($query) {
                 $query->where('is_active', false);
             })
+
+            // Due Status filter
+            ->when(
+                in_array($dueStatus, ['overdue', 'due_soon', 'up_to_date'], true),
+                function ($query) use ($dueStatus, $today, $warningDate) {
+                    $query->where('is_active', true);
+
+                    if ($dueStatus === 'overdue') {
+                        $query->where(function ($query) use ($today) {
+                            $query->whereDate('next_due_date', '<=', $today)
+                                ->orWhereHas('vehicle', function ($vehicle) {
+                                    $vehicle->whereNotNull('current_kilometers')
+                                        ->whereNotNull('maintenance_schedules.next_due_kilometers')
+                                        ->whereColumn(
+                                            'vehicles.current_kilometers',
+                                            '>=',
+                                            'maintenance_schedules.next_due_kilometers'
+                                        );
+                                });
+                        });
+                    }
+
+                    if ($dueStatus === 'due_soon') {
+                        $query->where(function ($query) use ($today, $warningDate) {
+                            $query->whereBetween('next_due_date', [$today, $warningDate])
+                                ->orWhereHas('vehicle', function ($vehicle) {
+                                    $vehicle->whereNotNull('current_kilometers')
+                                        ->whereColumn(
+                                            'vehicles.current_kilometers',
+                                            '<',
+                                            'maintenance_schedules.next_due_kilometers'
+                                        )
+                                        ->whereRaw(
+                                            'maintenance_schedules.next_due_kilometers - vehicles.current_kilometers <= ?',
+                                            [500]
+                                        );
+                                });
+                        });
+
+                        // Exclude schedules already overdue by date or mileage.
+                        $query->where(function ($query) use ($today) {
+                            $query->whereNull('next_due_date')
+                                ->orWhereDate('next_due_date', '>', $today);
+                        });
+
+                        $query->whereDoesntHave('vehicle', function ($vehicle) {
+                            $vehicle->whereNotNull('current_kilometers')
+                                ->whereNotNull('maintenance_schedules.next_due_kilometers')
+                                ->whereColumn(
+                                    'vehicles.current_kilometers',
+                                    '>=',
+                                    'maintenance_schedules.next_due_kilometers'
+                                );
+                        });
+                    }
+
+                    if ($dueStatus === 'up_to_date') {
+                        $query->where(function ($query) use ($warningDate) {
+                            $query->whereNull('next_due_date')
+                                ->orWhereDate('next_due_date', '>', $warningDate);
+                        });
+
+                        $query->whereDoesntHave('vehicle', function ($vehicle) {
+                            $vehicle->whereNotNull('current_kilometers')
+                                ->whereNotNull('maintenance_schedules.next_due_kilometers')
+                                ->where(function ($query) {
+                                    $query->whereColumn(
+                                        'vehicles.current_kilometers',
+                                        '>=',
+                                        'maintenance_schedules.next_due_kilometers'
+                                    )->orWhereRaw(
+                                            'maintenance_schedules.next_due_kilometers - vehicles.current_kilometers <= ?',
+                                            [500]
+                                        );
+                                });
+                        });
+                    }
+                }
+            )
+
             ->latest()
             ->paginate(10)
             ->withQueryString();
@@ -60,6 +131,7 @@ class MaintenanceScheduleController extends Controller
             'schedules' => $schedules,
             'search' => $search,
             'status' => $status,
+            'dueStatus' => $dueStatus,
         ]);
     }
 

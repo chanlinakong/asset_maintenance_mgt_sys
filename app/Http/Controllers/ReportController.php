@@ -9,37 +9,82 @@ use App\Models\Vehicle;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class ReportController extends Controller
 {
+
     public function index(Request $request): View
     {
         $from = $request->date('from');
         $to = $request->date('to');
         $status = $request->string('status')->trim()->toString();
         $type = $request->string('type')->trim()->toString();
+        $period = $request->input('period', 'all');
 
         $query = MaintenanceRecord::query()
             ->with('vehicle')
-            ->when($from, function ($query) use ($from) {
-                $query->whereDate('reported_at', '>=', $from);
+            ->when(
+                $from,
+                fn($query) =>
+                    $query->whereDate('reported_at', '>=', $from)
+            )
+            ->when(
+                $to,
+                fn($query) =>
+                    $query->whereDate('reported_at', '<=', $to)
+            )
+            ->when(
+                $status,
+                fn($query) =>
+                    $query->where('status', $status)
+            )
+            ->when(
+                $type,
+                fn($query) =>
+                    $query->where('type', $type)
+            )
+            ->when($period === 'today', function ($query) {
+                $query->whereDate('reported_at', today());
             })
-            ->when($to, function ($query) use ($to) {
-                $query->whereDate('reported_at', '<=', $to);
+            ->when($period === 'yesterday', function ($query) {
+                $query->whereDate('reported_at', today()->subDay());
             })
-            ->when($status, function ($query) use ($status) {
-                $query->where('status', $status);
+            ->when($period === 'this_month', function ($query) {
+                $query->whereBetween('reported_at', [
+                    now()->startOfMonth(),
+                    now()->endOfMonth(),
+                ]);
             })
-            ->when($type, function ($query) use ($type) {
-                $query->where('type', $type);
+            ->when($period === 'last_month', function ($query) {
+                $date = now()->subMonthNoOverflow();
+
+                $query->whereBetween('reported_at', [
+                    $date->copy()->startOfMonth(),
+                    $date->copy()->endOfMonth(),
+                ]);
+            })
+            ->when($period === 'this_year', function ($query) {
+                $query->whereBetween('reported_at', [
+                    now()->startOfYear(),
+                    now()->endOfYear(),
+                ]);
+            })
+            ->when($period === 'last_year', function ($query) {
+                $date = now()->subYear();
+
+                $query->whereBetween('reported_at', [
+                    $date->copy()->startOfYear(),
+                    $date->copy()->endOfYear(),
+                ]);
             });
 
-        $records = $query
+        // Keep all filtered records for summary calculations
+        $records = (clone $query)
             ->latest('reported_at')
             ->get();
 
         $totalRecords = $records->count();
-
         $totalCost = $records->sum(
             fn($record) => (float) $record->cost
         );
@@ -64,6 +109,7 @@ class ReportController extends Controller
             'maintenance'
         )->count();
 
+        // Cost by Vehicle (grouped summary)
         $costByVehicle = $records
             ->groupBy('vehicle_id')
             ->map(function ($records) {
@@ -75,8 +121,26 @@ class ReportController extends Controller
                     ),
                 ];
             })
-            ->sortByDesc('cost');
+            ->sortByDesc('cost')
+            ->values();
 
+        // Paginate Cost by Vehicle
+        $perPage = 10;
+        $vehiclePage = LengthAwarePaginator::resolveCurrentPage('vehicle_page');
+
+        $costByVehicle = new LengthAwarePaginator(
+            $costByVehicle->forPage($vehiclePage, $perPage)->values(),
+            $costByVehicle->count(),
+            $perPage,
+            $vehiclePage,
+            [
+                'path' => $request->url(),
+                'pageName' => 'vehicle_page',
+                'query' => $request->query(),
+            ]
+        );
+
+        // Cost by Type
         $costByType = $records
             ->groupBy('type')
             ->map(function ($records) {
@@ -90,8 +154,16 @@ class ReportController extends Controller
             })
             ->sortByDesc('cost');
 
+        // Paginate Maintenance Detail independently
+        $maintenancePage = LengthAwarePaginator::resolveCurrentPage('maintenance_page');
+
+        $maintenanceRecords = (clone $query)
+            ->latest('reported_at')
+            ->paginate($perPage, ['*'], 'maintenance_page')
+            ->withQueryString();
+
         return view('reports.index', [
-            'records' => $records,
+            'records' => $maintenanceRecords,
             'totalRecords' => $totalRecords,
             'totalCost' => $totalCost,
             'completedCount' => $completedCount,
@@ -108,6 +180,7 @@ class ReportController extends Controller
             'type' => $type,
         ]);
     }
+
 
     public function pdf(Request $request)
     {

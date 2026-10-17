@@ -28,6 +28,12 @@ class MaintenanceRecordController extends Controller
 
         $vehicleId = $request->integer('vehicle_id');
 
+        $period = $request->input('period');
+
+        $from = $request->input('from');
+
+        $to = $request->input('to');
+
         $maintenanceRecords = MaintenanceRecord::query()
             ->with('vehicle')
 
@@ -70,7 +76,43 @@ class MaintenanceRecordController extends Controller
             ->when($vehicleId, function ($query) use ($vehicleId) {
                 $query->where('vehicle_id', $vehicleId);
             })
-
+            ->when($period === 'today', function ($query) {
+                $query->whereDate('reported_at', today());
+            })
+            ->when($period === 'yesterday', function ($query) {
+                $query->whereDate('reported_at', today()->subDay());
+            })
+            ->when($period === 'this_month', function ($query) {
+                $query->whereBetween('reported_at', [
+                    now()->startOfMonth(),
+                    now()->endOfMonth(),
+                ]);
+            })
+            ->when($period === 'last_month', function ($query) {
+                $query->whereBetween('reported_at', [
+                    now()->subMonthNoOverflow()->startOfMonth(),
+                    now()->subMonthNoOverflow()->endOfMonth(),
+                ]);
+            })
+            ->when($period === 'this_year', function ($query) {
+                $query->whereBetween('reported_at', [
+                    now()->startOfYear(),
+                    now()->endOfYear(),
+                ]);
+            })
+            ->when($period === 'last_year', function ($query) {
+                $query->whereBetween('reported_at', [
+                    now()->subYearNoOverflow()->startOfYear(),
+                    now()->subYearNoOverflow()->endOfYear(),
+                ]);
+            })
+            // Custom date range
+            ->when($from, function ($query) use ($from) {
+                $query->whereDate('reported_at', '>=', $from);
+            })
+            ->when($to, function ($query) use ($to) {
+                $query->whereDate('reported_at', '<=', $to);
+            })
             ->latest('reported_at')
             ->paginate(10)
             ->withQueryString();
