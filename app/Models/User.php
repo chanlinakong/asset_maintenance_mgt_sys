@@ -13,7 +13,7 @@ use App\Enums\UserRole;
 use App\Models\MaintenanceAudit;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'email', 'password', 'role', 'avatar_path',])]
+#[Fillable(['name', 'email', 'password', 'role', 'avatar_path','is_active',])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -31,6 +31,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'role' => UserRole::class,
+            'is_active' => 'boolean',
         ];
     }
 

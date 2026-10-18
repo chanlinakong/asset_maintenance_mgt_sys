@@ -9,7 +9,8 @@ use App\Http\Controllers\MaintenanceScheduleController;
 use App\Http\Controllers\MaintenanceAttachmentController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\MaintenancePartController;
-
+use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\Settings\UserManagementController;
 Route::get('/', function () {
     return redirect()->route('dashboard');
 });
@@ -66,6 +67,28 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
             'destroy',
         ]);
 
+    Route::prefix('settings')
+        ->name('settings.')
+        ->group(function () {
+            
+            Route::get('/', [SettingsController::class, 'index'])
+                ->name('index');
+
+            Route::get('/users', [UserManagementController::class, 'index'])
+                ->name('users.index');
+
+            Route::get('/users/create', [UserManagementController::class, 'create'])
+                ->name('users.create');
+
+            Route::post('/users', [UserManagementController::class, 'store'])
+                ->name('users.store');
+
+            Route::patch('/users/{user}/role', [UserManagementController::class, 'updateRole'])
+                ->name('users.update-role');
+
+            Route::patch('/users/{user}/status', [UserManagementController::class, 'toggleActive'])
+                ->name('users.toggle-active');
+        });
 });
 
 Route::middleware(['auth', 'role:admin,staff'])->group(function () {
