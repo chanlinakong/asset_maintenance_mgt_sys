@@ -13,7 +13,7 @@ use App\Enums\UserRole;
 use App\Models\MaintenanceAudit;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'email', 'password', 'role',])]
+#[Fillable(['name', 'email', 'password', 'role', 'avatar_path',])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {

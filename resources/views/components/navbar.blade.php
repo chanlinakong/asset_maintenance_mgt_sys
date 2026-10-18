@@ -111,33 +111,102 @@
 
             @endauth
 
-            @auth
-                <div class="flex items-center gap-3">
 
+            @auth
+                @php
+                    $user = auth()->user();
+
+                    $initials = collect(explode(' ', trim($user->name)))
+                        ->filter()
+                        ->take(2)
+                        ->map(fn($part) => mb_strtoupper(mb_substr($part, 0, 1)))
+                        ->implode('');
+
+                    $avatarUrl = $user->avatar_path
+                        ? asset('storage/' . $user->avatar_path)
+                        : null;
+                @endphp
+
+                <div x-data="{ open: false }" class="relative flex items-center gap-3">
+
+                    {{-- User name and role --}}
                     <div class="hidden text-right sm:block">
                         <p class="text-sm font-medium text-gray-900">
-                            {{ auth()->user()->name }}
+                            {{ $user->name }}
                         </p>
 
                         <p class="text-xs text-gray-500">
-                            {{ str(auth()->user()->role->value)->title() }}
+                            {{ str($user->role->value)->replace('_', ' ')->title() }}
                         </p>
                     </div>
 
-                    <div class="flex h-9 w-9 items-center justify-center rounded-full bg-gray-200">
-                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                    {{-- Avatar and dropdown trigger --}}
+                    <button type="button" @click="open = !open" @keydown.escape.window="open = false"
+                        :aria-expanded="open.toString()" aria-label="Open user menu" class="flex h-10 w-10 shrink-0 items-center justify-center
+                       overflow-hidden rounded-full border border-gray-200
+                       bg-gray-100 transition hover:ring-2 hover:ring-blue-200">
+
+                        @if ($avatarUrl)
+                            <img src="{{ $avatarUrl }}" alt="" class="h-full w-full object-cover">
+                        @else
+                            <span class="text-sm font-semibold text-gray-600">
+                                {{ $initials ?: '?' }}
+                            </span>
+                        @endif
+                    </button>
+
+                    {{-- Dropdown menu --}}
+                    <div x-cloak x-show="open" @click.outside="open = false" x-transition class="absolute right-0 top-full z-50 mt-3 w-60
+                       overflow-hidden rounded-xl border border-gray-200
+                       bg-white py-2 shadow-lg">
+
+                        {{-- Account summary --}}
+                        <div class="border-b border-gray-100 px-4 py-3">
+                            <p class="truncate text-sm font-semibold text-gray-900">
+                                {{ $user->name }}
+                            </p>
+
+                            <p class="truncate text-xs text-gray-500">
+                                {{ $user->email }}
+                            </p>
+                        </div>
+
+                        {{-- My Account --}}
+                        <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-4 py-3 text-sm
+                           text-gray-700 hover:bg-gray-50">
+
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                <circle cx="12" cy="8" r="4" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 21v-2a7 7 0 0114 0v2" />
+                            </svg>
+
+                            <span>My Account</span>
+                        </a>
+
+                        {{-- Logout --}}
+                        <div class="border-t border-gray-100 pt-2">
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+
+                                <button type="submit" class="flex w-full items-center gap-3 px-4 py-3
+                                   text-left text-sm text-red-600
+                                   hover:bg-red-50">
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor" stroke-width="1.8">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M18 15l3-3m0 0l-3-3m3 3H9" />
+                                    </svg>
+
+                                    <span>Logout</span>
+                                </button>
+                            </form>
+                        </div>
                     </div>
-
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-
-                        <button type="submit" class="rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50">
-                            Logout
-                        </button>
-                    </form>
-
                 </div>
             @endauth
+
 
         </div>
 
