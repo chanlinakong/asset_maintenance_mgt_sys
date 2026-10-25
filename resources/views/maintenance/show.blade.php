@@ -234,7 +234,7 @@
                             {{ str($status->value)
                     ->replace('_', ' ')
                     ->title()
-                                                                        }}
+                                                                                    }}
 
                         </div>
 
@@ -339,7 +339,7 @@
                             'bg-indigo-100 text-indigo-700' =>
                                 $maintenanceTypeValue === 'inspection',
                         ])>
-                    {{ $maintenanceTypeValue
+                        {{ $maintenanceTypeValue
         ? str($maintenanceTypeValue)
             ->replace('_', ' ')
             ->title()
@@ -411,7 +411,7 @@
                         {{ $maintenance->reported_at
         ? $maintenance->reported_at->format('d M Y H:i')
         : '-'
-                                        }}
+                                            }}
 
                     </p>
 
@@ -430,7 +430,7 @@
                         {{ $maintenance->started_at
         ? $maintenance->started_at->format('d M Y H:i')
         : '-'
-                                        }}
+                                            }}
 
                     </p>
 
@@ -449,7 +449,7 @@
                         {{ $maintenance->completed_at
         ? $maintenance->completed_at->format('d M Y H:i')
         : '-'
-                                        }}
+                                            }}
 
                     </p>
 
@@ -468,7 +468,7 @@
                         {{ $maintenance->service_kilometers !== null
         ? number_format($maintenance->service_kilometers) . ' km'
         : '-'
-                                        }}
+                                            }}
 
                     </p>
 
@@ -620,7 +620,7 @@
                             {{ $maintenance->vehicle?->current_kilometers !== null
         ? number_format($maintenance->vehicle->current_kilometers) . ' km'
         : '-'
-                                            }}
+                                                }}
 
                         </p>
 
@@ -826,22 +826,22 @@
 
 
                     <form method="POST" action="{{ route('maintenance.parts.store', $maintenance) }}" x-data="{
-                                                            unitCost: '',
+                                                                    unitCost: '',
 
-                                                            parts: {
-                                                                @foreach($parts as $part)
-                                                                    {{ $part->id }}:
-                                                                        {{ (float) $part->default_unit_cost }},
-                                                                @endforeach
-                                                            },
+                                                                    parts: {
+                                                                        @foreach($parts as $part)
+                                                                            {{ $part->id }}:
+                                                                                {{ (float) $part->default_unit_cost }},
+                                                                        @endforeach
+                                                                    },
 
-                                                            updateCost() {
-                                                                const partId = this.$refs.part.value;
+                                                                    updateCost() {
+                                                                        const partId = this.$refs.part.value;
 
-                                                                this.unitCost =
-                                                                    this.parts[partId] ?? '';
-                                                            }
-                                                        }"
+                                                                        this.unitCost =
+                                                                            this.parts[partId] ?? '';
+                                                                    }
+                                                                }"
                         class="mt-5 grid grid-cols-1 gap-4 rounded-xl bg-gray-50 p-4 md:grid-cols-4">
 
                         @csrf
@@ -1123,7 +1123,7 @@
                                                 {{ str($attachment->attachment_type ?? 'other')
                         ->replace('_', ' ')
                         ->title()
-                                                                                                        }}
+                                                                                                                        }}
                                             </span>
 
                                             <span>
@@ -1204,107 +1204,128 @@
 
                 @forelse($maintenance->audits as $audit)
 
-                        <div class="flex gap-4">
+                            <div class="flex gap-4">
+
+                                {{-- Icon / timeline --}}
+
+                                <div class="flex flex-col items-center">
+
+                                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg
+                                        @if($audit->action === 'created')
+                                            bg-green-50 text-green-700
+                                        @elseif($audit->action === 'status_changed')
+                                            bg-blue-50 text-blue-700
+                                        @else
+                                            bg-gray-100 text-gray-600
+                                        @endif">
+
+                                        @if($audit->action === 'created')
+
+                                            {{-- Created: Plus icon --}}
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor" stroke-width="1.8">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14m-7-7h14" />
+                                            </svg>
+
+                                        @elseif($audit->action === 'status_changed')
+
+                                            {{-- Status changed: Refresh icon --}}
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor" stroke-width="1.8">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5" />
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M5.64 15A7 7 0 0018.36 18M18.36 9A7 7 0 005.64 6" />
+                                            </svg>
+
+                                        @else
+
+                                            {{-- Updated: Pencil icon --}}
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor" stroke-width="1.8">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M16.862 4.487l2.651 2.651M4 20l4.5-1 11.2-11.2a1.875 1.875 0 00-2.65-2.65L5.85 16.35 4 20z" />
+                                            </svg>
+
+                                        @endif
+
+                                    </div>
 
 
-                            {{-- Icon / timeline --}}
+                                    @unless($loop->last)
 
-                            <div class="flex flex-col items-center">
+                                        <div class="mt-2 h-full w-px bg-gray-200"></div>
 
-                                <div class="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100">
-
-                                    @if($audit->action === 'created')
-
-                                        ➕
-
-                                    @elseif($audit->action === 'status_changed')
-
-                                        🔄
-
-                                    @else
-
-                                        📝
-
-                                    @endif
+                                    @endunless
 
                                 </div>
 
 
-                                @unless($loop->last)
+                                {{-- Audit information --}}
 
-                                    <div class="mt-2 h-full w-px bg-gray-200"></div>
+                                <div class="pb-5">
 
-                                @endunless
+                                    <p class="font-medium text-gray-900">
 
-                            </div>
+                                        {{ str($audit->action)
+                        ->replace('_', ' ')
+                        ->title()
+                                                                                                }}
 
-
-                            {{-- Audit information --}}
-
-                            <div class="pb-5">
-
-                                <p class="font-medium text-gray-900">
-
-                                    {{ str($audit->action)
-                    ->replace('_', ' ')
-                    ->title()
-                                                                                }}
-
-                                </p>
-
-
-                                {{-- Status transition --}}
-
-                                @if($audit->old_status && $audit->new_status)
-
-                                            <p class="mt-1 text-sm text-gray-600">
-
-                                                {{ str($audit->old_status)
-                                    ->replace('_', ' ')
-                                    ->title()
-                                                                                                                                    }}
-
-                                                →
-
-                                                {{ str($audit->new_status)
-                                    ->replace('_', ' ')
-                                    ->title()
-                                                                                                                                    }}
-
-                                            </p>
-
-                                @endif
-
-
-                                {{-- Description --}}
-
-                                @if($audit->description)
-
-                                    <p class="mt-1 text-sm text-gray-500">
-                                        {{ $audit->description }}
                                     </p>
 
-                                @endif
+
+                                    {{-- Status transition --}}
+
+                                    @if($audit->old_status && $audit->new_status)
+
+                                                <p class="mt-1 text-sm text-gray-600">
+
+                                                    {{ str($audit->old_status)
+                                        ->replace('_', ' ')
+                                        ->title()
+                                                                                                                                                                }}
+
+                                                    →
+
+                                                    {{ str($audit->new_status)
+                                        ->replace('_', ' ')
+                                        ->title()
+                                                                                                                                                                }}
+
+                                                </p>
+
+                                    @endif
 
 
-                                {{-- User and time --}}
+                                    {{-- Description --}}
 
-                                <p class="mt-2 text-xs text-gray-400">
+                                    @if($audit->description)
 
-                                    {{ $audit->user?->name ?? 'System' }}
+                                        <p class="mt-1 text-sm text-gray-500">
+                                            {{ $audit->description }}
+                                        </p>
 
-                                    ·
+                                    @endif
 
-                                    {{ $audit->created_at
-                    ? $audit->created_at->format('d M Y, H:i')
-                    : '-'
-                                                                                }}
 
-                                </p>
+                                    {{-- User and time --}}
+
+                                    <p class="mt-2 text-xs text-gray-400">
+
+                                        {{ $audit->user?->name ?? 'System' }}
+
+                                        ·
+
+                                        {{ $audit->created_at
+                        ? $audit->created_at->format('d M Y, H:i')
+                        : '-'
+                                                                                                }}
+
+                                    </p>
+
+                                </div>
 
                             </div>
-
-                        </div>
 
                 @empty
 

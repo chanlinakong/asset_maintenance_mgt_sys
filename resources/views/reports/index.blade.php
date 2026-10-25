@@ -177,18 +177,18 @@
         </div>
 
 
-        {{-- Summary Cards --}}
+        <!-- Summary Cards -->
         <div class="grid grid-cols-2 gap-4 lg:grid-cols-5">
 
-            <x-stat-card title="Maintenance Records" :value="$totalRecords" icon="🔧" />
+            <x-stat-card title="Maintenance Records" :value="$totalRecords" icon="clipboard" />
 
-            <x-stat-card title="Total Cost" :value="'$' . number_format($totalCost, 2)" icon="💰" />
+            <x-stat-card title="Total Cost" :value="'$' . number_format($totalCost, 2)" icon="banknote" />
 
-            <x-stat-card title="Completed" :value="$completedCount" icon="✅" />
+            <x-stat-card title="Completed" :value="$completedCount" icon="check-circle" />
 
-            <x-stat-card title="In Progress" :value="$inProgressCount" icon="🔄" />
+            <x-stat-card title="In Progress" :value="$inProgressCount" icon="wrench" />
 
-            <x-stat-card title="Vehicles in Maintenance" :value="$vehiclesUnderMaintenance" icon="🚛" />
+            <x-stat-card title="Vehicles in Maintenance" :value="$vehiclesUnderMaintenance" icon="truck" />
 
         </div>
 

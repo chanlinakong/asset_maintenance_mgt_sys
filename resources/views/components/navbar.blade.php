@@ -10,7 +10,7 @@
         {{-- Page title --}}
         <div class="hidden sm:block">
             <h1 class="text-lg font-semibold">
-                Asset Maintenance System
+                
             </h1>
         </div>
 
@@ -18,8 +18,13 @@
         <div class="flex items-center gap-3">
 
             <button x-show="canInstall" x-cloak @click="installApp" type="button"
-                class="rounded-lg px-3 py-2 text-sm font-medium hover:bg-gray-100">
-                📱 Install
+                class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100 hover:text-gray-900">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="1.8">
+                    <rect x="6" y="2.5" width="12" height="19" rx="2" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 18.5h4" />
+                </svg>
+                <span>Install</span>
             </button>
 
             @auth
@@ -36,17 +41,20 @@
                 <div x-data="{ open: false }" class="relative">
 
                     <button @click="open = !open" type="button"
-                        class="relative rounded-lg p-2 text-gray-600 hover:bg-gray-100">
+                        class="relative rounded-lg p-2 text-gray-600 transition hover:bg-gray-100 hover:text-gray-900">
 
-                        🔔
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M18 8a6 6 0 00-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 21h4" />
+                        </svg>
 
                         @if($unreadNotifications->count())
-
                             <span
                                 class="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-xs font-bold text-white">
                                 {{ $unreadNotifications->count() }}
                             </span>
-
                         @endif
 
                     </button>
@@ -143,8 +151,8 @@
                     {{-- Avatar and dropdown trigger --}}
                     <button type="button" @click="open = !open" @keydown.escape.window="open = false"
                         :aria-expanded="open.toString()" aria-label="Open user menu" class="flex h-10 w-10 shrink-0 items-center justify-center
-                       overflow-hidden rounded-full border border-gray-200
-                       bg-gray-100 transition hover:ring-2 hover:ring-blue-200">
+                           overflow-hidden rounded-full border border-gray-200
+                           bg-gray-100 transition hover:ring-2 hover:ring-blue-200">
 
                         @if ($avatarUrl)
                             <img src="{{ $avatarUrl }}" alt="" class="h-full w-full object-cover">
@@ -157,8 +165,8 @@
 
                     {{-- Dropdown menu --}}
                     <div x-cloak x-show="open" @click.outside="open = false" x-transition class="absolute right-0 top-full z-50 mt-3 w-60
-                       overflow-hidden rounded-xl border border-gray-200
-                       bg-white py-2 shadow-lg">
+                           overflow-hidden rounded-xl border border-gray-200
+                           bg-white py-2 shadow-lg">
 
                         {{-- Account summary --}}
                         <div class="border-b border-gray-100 px-4 py-3">
@@ -173,7 +181,7 @@
 
                         {{-- My Account --}}
                         <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-4 py-3 text-sm
-                           text-gray-700 hover:bg-gray-50">
+                               text-gray-700 hover:bg-gray-50">
 
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none"
                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -190,8 +198,8 @@
                                 @csrf
 
                                 <button type="submit" class="flex w-full items-center gap-3 px-4 py-3
-                                   text-left text-sm text-red-600
-                                   hover:bg-red-50">
+                                       text-left text-sm text-red-600
+                                       hover:bg-red-50">
 
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                                         stroke="currentColor" stroke-width="1.8">

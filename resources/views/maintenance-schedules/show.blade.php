@@ -89,52 +89,52 @@
 
         @if($maintenanceSchedule->dueStatus($maintenanceSchedule->vehicle->current_kilometers) === 'overdue')
 
+            <!-- Overdue Maintenance -->
+
             <div class="rounded-xl border border-red-200 bg-red-50 p-5">
-
-                <div class="flex gap-3">
-
-                    <div class="text-xl">
-                        ⚠️
+                <div class="flex items-start gap-3">
+                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-100 text-red-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 9v4m0 4h.01M10.3 3.86L1.82 18.5A2 2 0 003.55 21h16.9a2 2 0 001.73-2.5L13.7 3.86a2 2 0 00-3.4 0z" />
+                        </svg>
                     </div>
 
                     <div>
-
                         <h2 class="font-semibold text-red-800">
                             Maintenance is overdue
                         </h2>
-
                         <p class="mt-1 text-sm text-red-700">
                             This preventive maintenance should be scheduled as soon as possible.
                         </p>
-
                     </div>
-
                 </div>
 
             </div>
 
         @elseif($maintenanceSchedule->dueStatus($maintenanceSchedule->vehicle->current_kilometers) === 'due_soon')
 
+            <!-- Maintenance Due Soon -->
+
             <div class="rounded-xl border border-yellow-200 bg-yellow-50 p-5">
-
-                <div class="flex gap-3">
-
-                    <div class="text-xl">
-                        ⏰
+                <div class="flex items-start gap-3">
+                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-yellow-100 text-yellow-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="1.8">
+                            <circle cx="12" cy="12" r="9" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 7v5l3 2" />
+                        </svg>
                     </div>
 
                     <div>
-
                         <h2 class="font-semibold text-yellow-800">
                             Maintenance is due soon
                         </h2>
-
                         <p class="mt-1 text-sm text-yellow-700">
                             Consider scheduling this maintenance before the due date.
                         </p>
-
                     </div>
-
                 </div>
 
             </div>
@@ -220,7 +220,7 @@
                     {{ $maintenanceSchedule->last_service_kilometers !== null
         ? number_format($maintenanceSchedule->last_service_kilometers) . ' km'
         : '—'
-                                                    }}
+                                                                    }}
                 </p>
 
             </div>
@@ -236,7 +236,7 @@
                     {{ $maintenanceSchedule->next_due_kilometers !== null
         ? number_format($maintenanceSchedule->next_due_kilometers) . ' km'
         : '—'
-                                                    }}
+                                                                    }}
                 </p>
 
             </div>
@@ -261,9 +261,12 @@
                 {{-- Header --}}
                 <div class="flex items-center gap-3">
                     <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-                                d="M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5.64 18.36a9 9 0 1112.72 0" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 13l4-4" />
+                            <circle cx="12" cy="13" r="1" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 21h16" />
                         </svg>
                     </div>
 
@@ -484,7 +487,7 @@
                         @method('PATCH')
 
                         <button type="submit" class="w-full rounded-lg px-4 py-2 text-sm font-medium text-white
-                                        {{ $maintenanceSchedule->is_active
+                                                                        {{ $maintenanceSchedule->is_active
                 ? 'bg-amber-600 hover:bg-amber-700'
                 : 'bg-emerald-600 hover:bg-emerald-700' }}">
                             {{ $maintenanceSchedule->is_active ? 'Deactivate' : 'Reactivate' }}
