@@ -34,16 +34,20 @@
 
             <a
                 href="{{ route('vehicles.show', $vehicle) }}"
-                class="rounded-lg border px-4 py-2"
+                class="rounded-lg border px-4 py-2 transition-colors
+                                                    hover:border-gray-400 hover:bg-gray-100 hover:text-gray-900
+                                                    focus:outline-none focus:ring-2 focus:ring-gray-300"
             >
                 Cancel
             </a>
 
             <button
                 type="submit"
-                class="rounded-lg bg-gray-900 px-4 py-2 text-white"
+                class="rounded-lg bg-gray-900 px-4 py-2 text-white transition-colors
+                                                        hover:border-gray-700 hover:bg-gray-700 hover:text-white-100
+                                                        focus:outline-none focus:ring-2 focus:ring-gray-300"
             >
-                Update Vehicle
+                Update
             </button>
 
         </div>

@@ -5,12 +5,6 @@
 
     {{-- Header --}}
     <div>
-        <a href="{{ route('settings.users.index') }}"
-           class="inline-flex items-center gap-2 text-sm font-medium text-gray-500 transition hover:text-indigo-600">
-            <span aria-hidden="true">&larr;</span>
-            Back to Users & Access
-        </a>
-
         <h1 class="mt-3 text-2xl font-bold tracking-tight text-gray-900">
             Create User
         </h1>
@@ -60,7 +54,7 @@
                         autofocus
                         maxlength="255"
                         placeholder="Enter full name"
-                        class="w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        class="w-full rounded-lg border border-gray-300 text-sm px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500"
                     >
                     @error('name')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -81,7 +75,7 @@
                         required
                         maxlength="255"
                         placeholder="name@example.com"
-                        class="w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        class="w-full rounded-lg border border-gray-300 text-sm px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500"
                     >
                     @error('email')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -97,7 +91,7 @@
                         id="role"
                         name="role"
                         required
-                        class="w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        class="w-full rounded-lg border border-gray-300 text-sm px-3 py-2"
                     >
                         <option value="staff" @selected(old('role', 'staff') === 'staff')>
                             Staff
@@ -134,7 +128,7 @@
                         required
                         minlength="8"
                         placeholder="Enter password"
-                        class="w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        class="w-full rounded-lg border border-gray-300 text-sm px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500"
                     >
                     @error('password')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -154,7 +148,7 @@
                         required
                         minlength="8"
                         placeholder="Enter the same password again"
-                        class="w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        class="w-full rounded-lg border border-gray-300 text-sm px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500"
                     >
                 </div>
             </div>

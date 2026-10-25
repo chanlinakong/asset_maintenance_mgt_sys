@@ -9,7 +9,7 @@
             Vehicle
         </label>
 
-        <select name="vehicle_id" id="vehicle_id" class="mt-1 block w-full rounded-lg border-gray-300" required>
+        <select name="vehicle_id" id="vehicle_id" class="mt-1 block w-full rounded-lg px-3 py-2 border border-gray-300" required>
             <option value="">
                 Select vehicle
             </option>
@@ -40,7 +40,7 @@
         </label>
 
         <input type="text" name="title" id="title" value="{{ old('title', $maintenanceSchedule?->title) }}"
-            placeholder="e.g. Engine Oil Change" class="mt-1 block w-full rounded-lg border-gray-300" required>
+            placeholder="e.g. Engine Oil Change" class="mt-1 block w-full rounded-lg px-3 py-2 border border-gray-300" required>
 
         @error('title')
             <p class="mt-1 text-sm text-red-600">
@@ -55,7 +55,7 @@
         </label>
 
         <textarea name="description" id="description" rows="4"
-            class="mt-1 block w-full rounded-lg border-gray-300">{{ old('description', $maintenanceSchedule?->description) }}</textarea>
+            class="mt-1 block w-full rounded-lg px-3 py-2 border border-gray-300">{{ old('description', $maintenanceSchedule?->description) }}</textarea>
 
         @error('description')
             <p class="mt-1 text-sm text-red-600">
@@ -72,7 +72,7 @@
         <input type="date" name="last_service_date" id="last_service_date" value="{{ old(
     'last_service_date',
     $maintenanceSchedule?->last_service_date?->format('Y-m-d')
-) }}" class="mt-1 block w-full rounded-lg border-gray-300">
+) }}" class="mt-1 block w-full px-3 py-2 border rounded-lg border-gray-300">
 
         <p class="mt-1 text-xs text-gray-500">
             Leave empty if this vehicle has never received this service.
@@ -95,7 +95,7 @@
             <input type="number" name="interval_days" id="interval_days" min="1" value="{{ old(
     'interval_days',
     $maintenanceSchedule?->interval_days
-) }}" placeholder="e.g. 90" class="mt-1 block w-full rounded-lg border-gray-300">
+) }}" placeholder="e.g. 90" class="mt-1 block w-full rounded-lg px-3 py-2 border border-gray-300">
 
             <p class="mt-1 text-xs text-gray-500">
                 Leave empty if this schedule is not time-based.
@@ -116,7 +116,7 @@
             <input type="number" name="interval_kilometers" id="interval_kilometers" min="1" value="{{ old(
     'interval_kilometers',
     $maintenanceSchedule?->interval_kilometers
-) }}" placeholder="e.g. 5000" class="mt-1 block w-full rounded-lg border-gray-300">
+) }}" placeholder="e.g. 5000" class="mt-1 block w-full rounded-lg px-3 py-2 border border-gray-300">
 
             <p class="mt-1 text-xs text-gray-500">
                 Leave empty if this schedule is not kilometer-based.

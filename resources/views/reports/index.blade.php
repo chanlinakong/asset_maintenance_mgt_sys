@@ -33,14 +33,11 @@
             </div>
         </div>
 
-
         {{-- Filters --}}
         <div class="rounded-xl bg-white p-4 shadow-sm sm:p-6">
+            <form method="GET" action="{{ route('reports.index') }}">
 
-            <form method="GET" action="{{ route('reports.index') }}"
-                class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div class="grid grid-cols-1 items-end gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
                     {{-- Date Period --}}
                     <div>
@@ -48,33 +45,16 @@
                             Date Period
                         </label>
 
-                        <select id="period" name="period"
-                            class="w-full rounded-lg border-gray-300 text-sm focus:border-gray-900 focus:ring-gray-900">
-
-                            <option value="all" @selected(request('period', 'all') === 'all')>
-                                All Dates
-                            </option>
-                            <option value="today" @selected(request('period') === 'today')>
-                                Today
-                            </option>
-                            <option value="yesterday" @selected(request('period') === 'yesterday')>
-                                Yesterday
-                            </option>
-                            <option value="this_month" @selected(request('period') === 'this_month')>
-                                This Month
-                            </option>
-                            <option value="last_month" @selected(request('period') === 'last_month')>
-                                Last Month
-                            </option>
-                            <option value="this_year" @selected(request('period') === 'this_year')>
-                                This Year
-                            </option>
-                            <option value="last_year" @selected(request('period') === 'last_year')>
-                                Last Year
-                            </option>
-                            <option value="custom" @selected(request('period') === 'custom')>
-                                Custom Date Range
-                            </option>
+                        <select id="period" name="period" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
+                                       focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200">
+                            <option value="all" @selected(request('period', 'all') === 'all')>All Dates</option>
+                            <option value="today" @selected(request('period') === 'today')>Today</option>
+                            <option value="yesterday" @selected(request('period') === 'yesterday')>Yesterday</option>
+                            <option value="this_month" @selected(request('period') === 'this_month')>This Month</option>
+                            <option value="last_month" @selected(request('period') === 'last_month')>Last Month</option>
+                            <option value="this_year" @selected(request('period') === 'this_year')>This Year</option>
+                            <option value="last_year" @selected(request('period') === 'last_year')>Last Year</option>
+                            <option value="custom" @selected(request('period') === 'custom')>Custom Date Range</option>
                         </select>
                     </div>
 
@@ -82,15 +62,14 @@
                     <div id="custom-date-fields" class="{{ request('period') === 'custom' ? '' : 'hidden' }} sm:col-span-2">
 
                         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-
                             <div>
                                 <label for="from" class="mb-1 block text-sm font-medium text-gray-700">
                                     From Date
                                 </label>
 
                                 <input id="from" name="from" type="date" value="{{ request('from', $from ?? '') }}"
-                                    max="{{ request('to', $to ?? '') }}"
-                                    class="w-full rounded-lg border-gray-300 text-sm focus:border-gray-900 focus:ring-gray-900">
+                                    max="{{ request('to', $to ?? '') }}" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
+                                               focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200">
                             </div>
 
                             <div>
@@ -99,10 +78,9 @@
                                 </label>
 
                                 <input id="to" name="to" type="date" value="{{ request('to', $to ?? '') }}"
-                                    min="{{ request('from', $from ?? '') }}"
-                                    class="w-full rounded-lg border-gray-300 text-sm focus:border-gray-900 focus:ring-gray-900">
+                                    min="{{ request('from', $from ?? '') }}" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
+                                               focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200">
                             </div>
-
                         </div>
                     </div>
 
@@ -112,9 +90,8 @@
                             Status
                         </label>
 
-                        <select id="status" name="status"
-                            class="w-full rounded-lg border-gray-300 text-sm focus:border-gray-900 focus:ring-gray-900">
-
+                        <select id="status" name="status" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
+                                       focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200">
                             <option value="">All Statuses</option>
 
                             @foreach($statuses as $item)
@@ -131,9 +108,8 @@
                             Type
                         </label>
 
-                        <select id="type" name="type"
-                            class="w-full rounded-lg border-gray-300 text-sm focus:border-gray-900 focus:ring-gray-900">
-
+                        <select id="type" name="type" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
+                                       focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200">
                             <option value="">All Types</option>
 
                             @foreach($types as $item)
@@ -145,14 +121,16 @@
                     </div>
 
                     {{-- Buttons --}}
-                    <div class="flex items-end gap-2">
-                        <button type="submit"
-                            class="flex-1 rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800">
-                            Filter
+                    <div class="flex items-end justify-end gap-2">
+                        <button type="submit" class="w-24 rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white
+               transition-colors hover:bg-gray-700
+               focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2">
+                            Search
                         </button>
 
-                        <a href="{{ route('reports.index') }}"
-                            class="rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                        <a href="{{ route('reports.index') }}" class="shrink-0 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700
+                   transition-colors hover:border-gray-400 hover:bg-gray-100 hover:text-gray-900
+                   focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2">
                             Reset
                         </a>
                     </div>
@@ -173,9 +151,7 @@
                 @endif
 
             </form>
-
         </div>
-
 
         <!-- Summary Cards -->
         <div class="grid grid-cols-2 gap-4 lg:grid-cols-5">

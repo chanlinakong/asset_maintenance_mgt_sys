@@ -20,7 +20,7 @@
 
             @can('create', App\Models\MaintenanceSchedule::class)
                 <a href="{{ route('maintenance-schedules.create') }}"
-                    class="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800">
+                    class="rounded-lg bg-gray-900 transition-colors hover:bg-gray-700 px-4 py-2 text-sm font-medium text-white">
                     + New Schedule
                 </a>
             @endcan
@@ -31,9 +31,9 @@
             <div class="flex flex-col gap-3 sm:flex-row">
 
                 <input type="text" name="search" value="{{ $search }}" placeholder="Search schedule or vehicle..."
-                    class="w-full rounded-lg border-gray-300 sm:flex-1">
+                    class="w-full rounded-lg border border-gray-300 px-3 py-2 sm:flex-1">
 
-                <select name="status" class="rounded-lg border-gray-300">
+                <select name="status" class="rounded-lg border border-gray-300 px-3 py-2">
                     <option value="">
                         All
                     </option>
@@ -48,7 +48,7 @@
                 </select>
 
                 {{-- New Due Status Search --}}
-                <select name="due_status" class="rounded-lg border-gray-300">
+                <select name="due_status" class="rounded-lg border border-gray-300 px-3 py-2">
                     <option value="">All Due Status</option>
 
                     <option value="up_to_date" @selected(request('due_status') === 'up_to_date')>
@@ -64,7 +64,8 @@
                     </option>
                 </select>
 
-                <button type="submit" class="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white">
+                <button type="submit"
+                    class="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700">
                     Search
                 </button>
 
@@ -151,19 +152,31 @@
                                     @endphp
 
                                     <span class="rounded-full px-3 py-1 text-xs font-semibold {{ 
-                                        $schedule->dueStatusClasses($currentKilometers)
-                                    }}">
+                                                                $schedule->dueStatusClasses($currentKilometers)
+                                                            }}">
                                         {{ $schedule->dueStatusLabel($currentKilometers) }}
                                     </span>
 
                                 </td>
 
-                                <td class="px-6 py-4 text-right">
+                                <td class="px-6 py-4">
+                                    <div class="flex justify-end gap-2">
 
-                                    <a href="{{ route('maintenance-schedules.show', $schedule) }}"
-                                        class="text-sm font-medium text-gray-700 hover:text-gray-900">
-                                        View
-                                    </a>
+                                        <a href="{{ route('maintenance-schedules.show', $schedule) }}"
+                                            class="rounded-lg border px-3 py-1.5 transition-colors
+                                                                                        hover:border-gray-400 hover:bg-gray-100 hover:text-gray-900
+                                                                                        focus:outline-none focus:ring-2 focus:ring-gray-300">
+                                            View
+                                        </a>
+
+                                        @can('update', $schedule)
+                                        <a href="{{ route('maintenance-schedules.edit',$schedule) }}"
+                                            class="rounded-lg border px-3 py-1.5 transition-colors
+                                                    hover:border-gray-400 hover:bg-gray-100 hover:text-gray-900">                                                                                                                                       
+                                            Edit
+                                        </a>
+                                        @endcan
+                                    </div>
 
                                 </td>
 

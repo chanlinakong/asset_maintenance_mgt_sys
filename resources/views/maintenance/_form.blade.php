@@ -192,7 +192,7 @@
             </label>
 
             <select name="vehicle_id" id="vehicle_id" x-model="vehicleId" @change="vehicleChanged()"
-                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500"
+                class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none"
                 required>
                 <option value="">Select vehicle</option>
 
@@ -215,7 +215,7 @@
             </label>
 
             <select name="type" id="type" x-model="type" @change="typeChanged()"
-                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500"
+                class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none"
                 required>
                 <option value="">Select maintenance type</option>
 
@@ -239,7 +239,7 @@
 
             <input type="text" name="title" id="title" value="{{ old('title', $maintenance?->title ?? '') }}"
                 placeholder="e.g. Engine Repair"
-                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500"
+                class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none"
                 required>
 
             @error('title')
@@ -251,7 +251,7 @@
         <div x-show="type === 'preventive'" x-cloak>
 
             {{-- No vehicle selected --}}
-            <div x-show="!vehicleId" x-cloak class="mt-2 rounded-lg bg-yellow-50 p-3 text-sm text-yellow-700">
+            <div x-show="!vehicleId" x-cloak class="mt-7 rounded-lg bg-yellow-50 px-3 py-2 text-sm text-yellow-700">
                 Please select a vehicle first to view its maintenance schedules.
             </div>
 
@@ -263,7 +263,7 @@
 
                 <select name="maintenance_schedule_id" id="maintenance_schedule_id" x-model="selectedScheduleId"
                     :required="type === 'preventive' && !!vehicleId"
-                    class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500">
+                    class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none">
                     <option value="">Select preventive maintenance schedule</option>
 
                     <template x-for="schedule in schedules" :key="schedule.id">
@@ -282,18 +282,17 @@
 
                 {{-- No schedules --}}
                 <div x-show="!loadingSchedules && vehicleId && schedules.length === 0" x-cloak
-                    class="mt-2 rounded-lg bg-yellow-50 p-3 text-sm text-yellow-700">
-                    <p>
-                        This vehicle has no active preventive maintenance schedules.
+                    class="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border-amber-200 bg-amber-50 px-3 py-2 text-sm">
+                    <p class="text-amber-800">
+                        No active maintenance schedules for this vehicle.
                     </p>
 
                     <a :href="'{{ route('maintenance-schedules.create') }}?vehicle_id=' + encodeURIComponent(vehicleId)"
-                        class="mt-2 inline-flex items-center gap-1 font-medium text-indigo-700 hover:text-indigo-900 hover:underline">
-                        Create Maintenance Schedule
+                        class="inline-flex shrink-0 items-center gap-1 font-medium text-indigo-700 transition-colors hover:text-indigo-900 hover:underline">
+                        Create Schedule
                         <span aria-hidden="true">&rarr;</span>
                     </a>
                 </div>
-
             </div>
         </div>
 
@@ -305,7 +304,7 @@
 
             <input type="number" name="service_kilometers" id="service_kilometers"
                 value="{{ $selectedServiceKilometers }}" min="0" step="1" placeholder="e.g. 55200"
-                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500">
+                class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none">
 
             @error('service_kilometers')
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -324,7 +323,7 @@
                 </label>
 
                 <select name="status" id="status" x-model="status"
-                    class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500"
+                    class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none"
                     required>
                     @foreach($statuses as $statusOption)
                         <option value="{{ $statusOption->value }}">
@@ -352,7 +351,7 @@
     $maintenance?->reported_at
     ? $maintenance->reported_at->format('Y-m-d\TH:i')
     : now()->format('Y-m-d\TH:i')
-) }}" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500"
+) }}" class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none"
                 required>
 
             @error('reported_at')
@@ -369,7 +368,7 @@
             <input type="text" name="service_provider" id="service_provider"
                 value="{{ old('service_provider', $maintenance?->service_provider ?? '') }}"
                 placeholder="Workshop / Company"
-                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500">
+                class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none">
 
             @error('service_provider')
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -388,8 +387,7 @@
     $maintenance?->started_at
     ? $maintenance->started_at->format('Y-m-d\TH:i')
     : ''
-) }}"
-                    class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500">
+) }}" class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none">
 
                 @error('started_at')
                     <p class="mt-1 text-sm text-red-600">
@@ -412,7 +410,7 @@
     ? $maintenance->completed_at->format('Y-m-d\TH:i')
     : ''
 ) }}"
-                    class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500">
+                    class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none">
 
                 @error('completed_at')
                     <p class="mt-1 text-sm text-red-600">
@@ -452,7 +450,7 @@
 
                     <input type="number" name="labor_cost" id="labor_cost" value="{{ $selectedLaborCost }}" min="0"
                         step="0.01"
-                        class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500"
+                        class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none"
                         placeholder="0.00">
 
 
@@ -477,7 +475,7 @@
 
                     <input type="number" name="other_cost" id="other_cost" value="{{ $selectedOtherCost }}" min="0"
                         step="0.01"
-                        class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500"
+                        class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none"
                         placeholder="0.00">
 
 
@@ -521,10 +519,11 @@
         </label>
 
         <textarea name="description" id="description" rows="4" placeholder="Describe the maintenance work..."
-            class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500">{{ old(
+            class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none">{{ old(
     'description',
     $maintenance?->description ?? ''
-) }}</textarea>
+) }}
+        </textarea>
 
 
         @error('description')
@@ -547,10 +546,11 @@
         </label>
 
         <textarea name="notes" id="notes" rows="4" placeholder="Additional notes..."
-            class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500">{{ old(
+            class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none">{{ old(
     'notes',
     $maintenance?->notes ?? ''
-) }}</textarea>
+) }}
+        </textarea>
 
 
         @error('notes')

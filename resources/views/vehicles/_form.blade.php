@@ -99,14 +99,13 @@
     </div>
 
     <div>
-        <label for="current_kilometers" class="block text-sm font-medium text-gray-700">
+        <label for="current_kilometers" class="mb-2 block text-sm font-medium">
             Current Kilometers
         </label>
 
         <input type="number" name="current_kilometers" id="current_kilometers"
-            value="{{ old('current_kilometers', $vehicle->current_kilometers) }}" min="0" step="1"
-            class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500"
-            placeholder="e.g. 50000">
+            value="{{ old('current_kilometers', $vehicle->current_kilometers) }}" min="0" step="1" class="w-full rounded-lg border border-gray-300 px-3 py-2
+               focus:border-gray-500 focus:outline-none" placeholder="e.g. 50000">
 
         @error('current_kilometers')
             <p class="mt-1 text-sm text-red-600">

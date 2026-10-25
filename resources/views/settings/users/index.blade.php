@@ -46,7 +46,7 @@
               action="{{ route('settings.users.index') }}"
               class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
 
-            <div class="lg:col-span-1">
+            <div class="lg:col-span-2">
                 <label for="search" class="mb-1.5 block text-sm font-medium text-gray-700">
                     Search users
                 </label>
@@ -56,7 +56,7 @@
                     type="search"
                     value="{{ request('search') }}"
                     placeholder="Name or email..."
-                    class="w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    class="w-full rounded-lg border border-gray-300 text-sm px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500"
                 >
             </div>
 
@@ -67,7 +67,7 @@
                 <select
                     id="role"
                     name="role"
-                    class="w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    class="w-full rounded-lg border border-gray-300 text-sm px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500"
                 >
                     <option value="">All roles</option>
                     <option value="admin" @selected(request('role') === 'admin')>Admin</option>
@@ -82,7 +82,7 @@
                 <select
                     id="status"
                     name="status"
-                    class="w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    class="w-full rounded-lg border border-gray-300 text-sm px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500"
                 >
                     <option value="">All statuses</option>
                     <option value="active" @selected(request('status') === 'active')>Active</option>
@@ -90,12 +90,12 @@
                 </select>
             </div>
 
-            <div class="flex items-end gap-2">
+            <div class="flex items-end justify-end gap-2 sm:col-span-2 lg:col-span-4">
                 <button
                     type="submit"
-                    class="flex-1 rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-700"
+                    class="rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-700"
                 >
-                    Apply
+                    Search
                 </button>
 
                 <a

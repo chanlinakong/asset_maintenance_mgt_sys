@@ -31,12 +31,14 @@
             <div class="flex gap-2">
 
                 @if(auth()->user()->role->value === 'admin')
-                    <a href="{{ route('vehicles.edit', $vehicle) }}" class="rounded-lg border px-4 py-2">
+                    <a href="{{ route('vehicles.edit', $vehicle) }}"
+                        class="rounded-lg border border-gray-300 px-4 py-2 text-gray-700 transition-colors hover:border-gray-400 hover:bg-gray-200 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-300">
                         Edit
                     </a>
                 @endif
 
-                <a href="{{ route('vehicles.index') }}" class="rounded-lg bg-gray-900 px-4 py-2 text-white">
+                <a href="{{ route('vehicles.index') }}"
+                    class="rounded-lg bg-gray-900 px-4 py-2 text-white transition-colors hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2">
                     Back
                 </a>
 
@@ -128,7 +130,7 @@
                             'bg-red-100 text-red-700' =>
                                 $vehicle->status->value === 'out_of_service',
                         ])>
-                  {{ str($vehicle->status->value)
+                      {{ str($vehicle->status->value)
         ->replace('_', ' ')
         ->title() }}
                         </span>
@@ -190,10 +192,10 @@
                         Maintenance records for this vehicle.
                     </p>
                 </div>
-                
+
                 @if ($vehicle->maintenanceRecords->isNotEmpty() && $vehicle->status->value !== 'out_of_service')
                     <a href="{{ route('maintenance.create', ['vehicle_id' => $vehicle->id]) }}"
-                        class="rounded-lg bg-gray-900 px-4 py-2 text-center text-sm font-medium text-white hover:bg-gray-800">
+                        class="rounded-lg bg-gray-900 px-4 py-2 text-center text-sm font-medium text-white transition-colors hover:bg-gray-700">
                         + Report Maintenance
                     </a>
                 @endif
@@ -407,8 +409,9 @@
 
                         <a href="{{ route('maintenance.create', [
                     'vehicle_id' => $vehicle->id
-                ]) }}" class="mt-4 inline-block rounded-lg bg-gray-900 px-4 py-2
-                                                                        text-sm font-medium text-white hover:bg-gray-800">
+                ]) }}"
+                            class="mt-4 inline-block rounded-lg bg-gray-900 px-4 py-2
+                                                                                    text-sm font-medium text-white hover:bg-gray-800">
                             + Report Maintenance
                         </a>
 
@@ -437,7 +440,7 @@
                 @csrf
                 @method('DELETE')
 
-                <button type="submit" class="rounded-lg bg-red-600 px-4 py-2 text-white">
+                <button type="submit" class="rounded-lg bg-red-600 px-4 py-2 text-white transition-colors hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
                     Delete Vehicle
                 </button>
 

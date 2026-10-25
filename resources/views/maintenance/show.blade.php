@@ -98,8 +98,8 @@
 
                 @if($canUpdate)
 
-                    <a href="{{ route('maintenance.edit', $maintenance) }}"
-                        class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+                     <a href="{{ route('maintenance.edit', $maintenance) }}"
+                        class="rounded-lg border border-gray-300 px-4 py-2 text-gray-700 transition-colors hover:border-gray-400 hover:bg-gray-200 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-300">
                         Edit
                     </a>
 
@@ -128,7 +128,7 @@
                 {{-- Back --}}
 
                 <a href="{{ route('maintenance.index') }}"
-                    class="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800">
+                   class="rounded-lg bg-gray-900 px-4 py-2 text-white transition-colors hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2">
                     Back
                 </a>
 

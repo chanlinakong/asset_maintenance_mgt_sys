@@ -41,20 +41,19 @@
 
         <div class="overflow-hidden rounded-xl bg-white shadow-sm">
 
-            <div class="overflow-x-auto">
-
-                <form method="GET" action="{{ route('vehicles.index') }}" class="mb-6">
-                    <div class="flex flex-col gap-3 sm:flex-row">
-
+            <div class="p-4 sm:p-6">
+                <form method="GET" action="{{ route('vehicles.index') }}">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center justify-end">
+                       
                         <input type="search" name="search" value="{{ $search }}"
-                            placeholder="Search by code, name, type, brand..." class="w-full rounded-lg border border-gray-300 px-4 py-2
-                                           focus:border-gray-500 focus:outline-none
-                                           sm:max-w-md">
-
+                        placeholder="Search by code, name, type, brand..." class="w-full rounded-lg border border-gray-300 px-4 py-2
+                                        focus:border-gray-500 focus:outline-none
+                                        sm:max-w-md">
+                        
                         <select name="status" class="rounded-lg border border-gray-300 px-4 py-2">
                             <option value="">All Statuses</option>
 
-                            @foreach($statuses as $vehicleStatus)
+                            @foreach ($statuses as $vehicleStatus)
                                                 <option value="{{ $vehicleStatus->value }}" @selected($status === $vehicleStatus->value)>
                                                     {{ str($vehicleStatus->value)
                                 ->replace('_', ' ')
@@ -68,15 +67,18 @@
                             Search
                         </button>
 
-                        @if($search)
+                        @if ($search || $status)
                             <a href="{{ route('vehicles.index') }}" class="rounded-lg border border-gray-300 px-5 py-2
-                                                                       text-center hover:bg-gray-50">
+                                                               text-center hover:bg-gray-50">
                                 Clear
                             </a>
                         @endif
 
                     </div>
                 </form>
+            </div>
+            <div class="overflow-x-auto">
+
 
                 <table class="min-w-full text-left text-sm">
 
@@ -153,12 +155,18 @@
 
                                     <div class="flex justify-end gap-2">
 
-                                        <a href="{{ route('vehicles.show', $vehicle) }}" class="rounded-lg border px-3 py-1.5">
+                                        <a href="{{ route('vehicles.show', $vehicle) }}"
+                                            class="rounded-lg border px-3 py-1.5 transition-colors
+                                                    hover:border-gray-400 hover:bg-gray-100 hover:text-gray-900
+                                                    focus:outline-none focus:ring-2 focus:ring-gray-300">
                                             View
                                         </a>
 
                                         @if(auth()->user()->role->value === 'admin')
-                                            <a href="{{ route('vehicles.edit', $vehicle) }}" class="rounded-lg border px-3 py-1.5">
+                                            <a href="{{ route('vehicles.edit', $vehicle) }}"
+                                                class="rounded-lg border px-3 py-1.5 transition-colors
+                                                        hover:border-gray-400 hover:bg-gray-100 hover:text-gray-900
+                                                        focus:outline-none focus:ring-2 focus:ring-gray-300">
                                                 Edit
                                             </a>
 
@@ -168,7 +176,7 @@
                                                 @method('DELETE')
 
                                                 <button type="submit"
-                                                    class="rounded-lg border px-3 py-1.5 text-red-600 hover:bg-red-50">
+                                                    class="rounded-lg border px-3 py-1.5 transition-colors text-red-600 hover:bg-red-50 hover:border-red-300">
                                                     Delete
                                                 </button>
                                             </form>

@@ -52,16 +52,20 @@
 
                 <a
                     href="{{ route('maintenance-schedules.show', $maintenanceSchedule) }}"
-                    class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors
+                                                    hover:border-gray-400 hover:bg-gray-100 hover:text-gray-900
+                                                    focus:outline-none focus:ring-2 focus:ring-gray-300"
                 >
                     Cancel
                 </a>
 
                 <button
                     type="submit"
-                    class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                    class="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 text-white transition-colors
+                                                        hover:border-gray-700 hover:bg-gray-700 hover:text-white-100
+                                                        focus:outline-none focus:ring-2 focus:ring-gray-300"
                 >
-                    Update Schedule
+                    Update
                 </button>
 
             </div>

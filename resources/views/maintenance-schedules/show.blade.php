@@ -220,7 +220,7 @@
                     {{ $maintenanceSchedule->last_service_kilometers !== null
         ? number_format($maintenanceSchedule->last_service_kilometers) . ' km'
         : '—'
-                                                                    }}
+                                                                        }}
                 </p>
 
             </div>
@@ -236,7 +236,7 @@
                     {{ $maintenanceSchedule->next_due_kilometers !== null
         ? number_format($maintenanceSchedule->next_due_kilometers) . ' km'
         : '—'
-                                                                    }}
+                                                                        }}
                 </p>
 
             </div>
@@ -487,7 +487,7 @@
                         @method('PATCH')
 
                         <button type="submit" class="w-full rounded-lg px-4 py-2 text-sm font-medium text-white
-                                                                        {{ $maintenanceSchedule->is_active
+                                                                                {{ $maintenanceSchedule->is_active
                 ? 'bg-amber-600 hover:bg-amber-700'
                 : 'bg-emerald-600 hover:bg-emerald-700' }}">
                             {{ $maintenanceSchedule->is_active ? 'Deactivate' : 'Reactivate' }}
