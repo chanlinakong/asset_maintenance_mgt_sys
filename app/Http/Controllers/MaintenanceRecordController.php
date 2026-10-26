@@ -117,6 +117,10 @@ class MaintenanceRecordController extends Controller
             ->paginate(10)
             ->withQueryString();
 
+        if ($request->ajax()) {
+            return view('maintenance.partials.table', compact('maintenanceRecords'));
+        }
+
         return view('maintenance.index', [
             'maintenanceRecords' => $maintenanceRecords,
             'search' => $search,

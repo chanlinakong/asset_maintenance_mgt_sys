@@ -40,6 +40,10 @@ class VehicleController extends Controller
             ->paginate(10)
             ->withQueryString();
 
+        if ($request->ajax()) {
+            return view('vehicles.partials.table', compact('vehicles'));
+        }
+
         return view('vehicles.index', [
             'vehicles' => $vehicles,
             'search' => $search,

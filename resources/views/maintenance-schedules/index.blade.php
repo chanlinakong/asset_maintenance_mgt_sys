@@ -27,7 +27,7 @@
 
         </div>
 
-        <form method="GET" class="rounded-xl bg-white p-4 shadow-sm">
+        <form method="GET" class="rounded-xl bg-white p-4 shadow-sm" id="maintenance-schedule-form">
             <div class="flex flex-col gap-3 sm:flex-row">
 
                 <input type="text" name="search" value="{{ $search }}" placeholder="Search schedule or vehicle..."
@@ -69,187 +69,143 @@
                     Search
                 </button>
 
+                <a id="schedule-clear-link" href="{{ route('maintenance-schedules.index') }}" class="{{ request()->hasAny(['search', 'status', 'due_status']) ? '' : 'hidden' }}
+                   rounded-lg border border-gray-300 px-5 py-2 text-sm
+                   font-medium text-gray-700 transition hover:bg-gray-50">
+                    Clear
+                </a>
+
             </div>
         </form>
 
-        <div class="overflow-hidden rounded-xl bg-white shadow-sm">
+        <div id="maintenance-schedule-data-table"
+            class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
 
-            <div class="hidden overflow-x-auto md:block">
+            @include('maintenance-schedules.partials.table')
 
-                <table class="min-w-full divide-y divide-gray-200">
-
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-500">
-                                Vehicle
-                            </th>
-
-                            <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-500">
-                                Maintenance
-                            </th>
-
-                            <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-500">
-                                Next Due
-                            </th>
-
-                            <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-500">
-                                Status
-                            </th>
-
-                            <th class="px-6 py-3 text-right text-xs font-semibold uppercase text-gray-500">
-                                Action
-                            </th>
-                        </tr>
-                    </thead>
-
-                    <tbody class="divide-y divide-gray-100">
-
-                        @forelse($schedules as $schedule)
-
-                            <tr>
-
-                                <td class="px-6 py-4">
-                                    <p class="font-medium text-gray-900">
-                                        {{ $schedule->vehicle->vehicle_code }}
-                                    </p>
-
-                                    <p class="text-sm text-gray-500">
-                                        {{ $schedule->vehicle->name }}
-                                    </p>
-                                </td>
-
-                                <td class="px-6 py-4">
-                                    <p class="font-medium text-gray-900">
-                                        {{ $schedule->title }}
-                                    </p>
-
-                                    <p class="text-sm text-gray-500">
-                                        @if($schedule->interval_days)
-                                            Every {{ $schedule->interval_days }} days
-                                        @endif
-
-                                        @if(
-                                                $schedule->interval_days
-                                                && $schedule->interval_kilometers
-                                            )
-                                            ·
-                                        @endif
-
-                                        @if($schedule->interval_kilometers)
-                                            Every {{ number_format($schedule->interval_kilometers) }} km
-                                        @endif
-                                    </p>
-                                </td>
-
-                                <td class="px-6 py-4 text-sm text-gray-700">
-                                    {{ $schedule->next_due_date?->format('d M Y') ?? '—' }}
-                                </td>
-
-                                <td class="px-6 py-4">
-
-                                    @php
-                                        $currentKilometers = $schedule->vehicle?->current_kilometers;
-                                    @endphp
-
-                                    <span class="rounded-full px-3 py-1 text-xs font-semibold {{ 
-                                                                $schedule->dueStatusClasses($currentKilometers)
-                                                            }}">
-                                        {{ $schedule->dueStatusLabel($currentKilometers) }}
-                                    </span>
-
-                                </td>
-
-                                <td class="px-6 py-4">
-                                    <div class="flex justify-end gap-2">
-
-                                        <a href="{{ route('maintenance-schedules.show', $schedule) }}"
-                                            class="rounded-lg border px-3 py-1.5 transition-colors
-                                                                                        hover:border-gray-400 hover:bg-gray-100 hover:text-gray-900
-                                                                                        focus:outline-none focus:ring-2 focus:ring-gray-300">
-                                            View
-                                        </a>
-
-                                        @can('update', $schedule)
-                                        <a href="{{ route('maintenance-schedules.edit',$schedule) }}"
-                                            class="rounded-lg border px-3 py-1.5 transition-colors
-                                                    hover:border-gray-400 hover:bg-gray-100 hover:text-gray-900">                                                                                                                                       
-                                            Edit
-                                        </a>
-                                        @endcan
-                                    </div>
-
-                                </td>
-
-                            </tr>
-
-                        @empty
-
-                            <tr>
-                                <td colspan="5" class="px-6 py-12 text-center text-sm text-gray-500">
-                                    No maintenance schedules found.
-                                </td>
-                            </tr>
-
-                        @endforelse
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-            {{-- Mobile --}}
-            <div class="divide-y divide-gray-100 md:hidden">
-
-                @forelse($schedules as $schedule)
-
-                    <a href="{{ route('maintenance-schedules.show', $schedule) }}" class="block p-4 hover:bg-gray-50">
-
-                        <div class="flex items-start justify-between gap-3">
-
-                            <div>
-                                <p class="font-semibold text-gray-900">
-                                    {{ $schedule->title }}
-                                </p>
-
-                                <p class="mt-1 text-sm text-gray-500">
-                                    {{ $schedule->vehicle->vehicle_code }}
-                                    ·
-                                    {{ $schedule->vehicle->name }}
-                                </p>
-                            </div>
-
-                            <span class="rounded-full px-3 py-1 text-xs font-semibold {{ $schedule->dueStatusClasses() }}">
-                                {{ $schedule->dueStatusLabel($schedule->vehicle->current_kilometers) }}
-                            </span>
-
-                        </div>
-
-                        <p class="mt-3 text-sm text-gray-500">
-                            Next due:
-                            <span class="font-medium text-gray-700">
-                                {{ $schedule->next_due_date?->format('d M Y') ?? '—' }}
-                            </span>
-                        </p>
-
-                    </a>
-
-                @empty
-
-                    <div class="p-8 text-center text-sm text-gray-500">
-                        No maintenance schedules found.
-                    </div>
-
-                @endforelse
-
-            </div>
-
-        </div>
-
-        <div>
-            {{ $schedules->links() }}
         </div>
 
     </div>
 
 @endsection
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('maintenance-schedule-form');
+        const table = document.getElementById('maintenance-schedule-data-table');
+
+        if (!form || !table) return;
+
+        const filterNames = ['search', 'status', 'due_status'];
+
+        async function refreshSchedules(url, updateHistory = true) {
+            const targetUrl = new URL(url, window.location.origin);
+
+            table.classList.add('opacity-50', 'pointer-events-none');
+
+            try {
+                const response = await fetch(targetUrl, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'text/html'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load maintenance schedules.');
+                }
+
+                // Replace table contents while keeping its wrapper and event listener.
+                table.innerHTML = await response.text();
+
+                const params = targetUrl.searchParams;
+
+                // Show Clear only when at least one filter has a value.
+                const hasFilters = filterNames.some(name =>
+                    (params.get(name) || '').trim() !== ''
+                );
+
+                const clearLink = document.getElementById('schedule-clear-link');
+
+                clearLink?.classList.toggle('hidden', !hasFilters);
+
+                // Synchronize filter inputs with the URL.
+                filterNames.forEach(name => {
+                    const field = form.elements.namedItem(name);
+
+                    if (field) {
+                        field.value = params.get(name) || '';
+                    }
+                });
+
+                if (updateHistory) {
+                    history.pushState({}, '', targetUrl);
+                }
+            } catch (error) {
+                window.location.href = targetUrl.href;
+            } finally {
+                table.classList.remove('opacity-50', 'pointer-events-none');
+            }
+        }
+
+        // Search filters using AJAX.
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const url = new URL(form.action || window.location.pathname, window.location.origin);
+            url.search = new URLSearchParams(new FormData(form)).toString();
+
+            refreshSchedules(url);
+        });
+
+        // Clear all filters using AJAX.
+        document.addEventListener('click', function (event) {
+            const clearLink = event.target.closest('#schedule-clear-link');
+
+            if (!clearLink) return;
+
+            event.preventDefault();
+
+            form.reset();
+
+            filterNames.forEach(name => {
+                const field = form.elements.namedItem(name);
+                if (field) field.value = '';
+            });
+
+            refreshSchedules(clearLink.href);
+        });
+
+        // AJAX pagination only.
+        table.addEventListener('click', function (event) {
+            const link = event.target.closest(
+                'nav[role="navigation"] a'
+            );
+
+            if (!link || !table.contains(link)) return;
+
+            if (
+                link.target === '_blank' ||
+                event.ctrlKey ||
+                event.metaKey ||
+                event.shiftKey ||
+                event.altKey
+            ) {
+                return;
+            }
+
+            const url = new URL(link.href, window.location.origin);
+
+            if (url.origin !== window.location.origin) return;
+
+            event.preventDefault();
+            refreshSchedules(url);
+        });
+
+        // Support browser Back and Forward.
+        window.addEventListener('popstate', function () {
+            refreshSchedules(window.location.href, false);
+        });
+    });
+
+</script>

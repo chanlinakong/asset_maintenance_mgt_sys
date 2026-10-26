@@ -46,7 +46,7 @@
                         </label>
 
                         <select id="period" name="period" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
-                                       focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200">
+                                               focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200">
                             <option value="all" @selected(request('period', 'all') === 'all')>All Dates</option>
                             <option value="today" @selected(request('period') === 'today')>Today</option>
                             <option value="yesterday" @selected(request('period') === 'yesterday')>Yesterday</option>
@@ -68,8 +68,9 @@
                                 </label>
 
                                 <input id="from" name="from" type="date" value="{{ request('from', $from ?? '') }}"
-                                    max="{{ request('to', $to ?? '') }}" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
-                                               focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200">
+                                    max="{{ request('to', $to ?? '') }}"
+                                    class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
+                                                       focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200">
                             </div>
 
                             <div>
@@ -78,8 +79,9 @@
                                 </label>
 
                                 <input id="to" name="to" type="date" value="{{ request('to', $to ?? '') }}"
-                                    min="{{ request('from', $from ?? '') }}" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
-                                               focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200">
+                                    min="{{ request('from', $from ?? '') }}"
+                                    class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
+                                                       focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200">
                             </div>
                         </div>
                     </div>
@@ -91,7 +93,7 @@
                         </label>
 
                         <select id="status" name="status" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
-                                       focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200">
+                                               focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200">
                             <option value="">All Statuses</option>
 
                             @foreach($statuses as $item)
@@ -109,7 +111,7 @@
                         </label>
 
                         <select id="type" name="type" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
-                                       focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200">
+                                               focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200">
                             <option value="">All Types</option>
 
                             @foreach($types as $item)
@@ -123,16 +125,19 @@
                     {{-- Buttons --}}
                     <div class="flex items-end justify-end gap-2">
                         <button type="submit" class="w-24 rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white
-               transition-colors hover:bg-gray-700
-               focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2">
+                       transition-colors hover:bg-gray-700
+                       focus:outline-none">
                             Search
                         </button>
 
-                        <a href="{{ route('reports.index') }}" class="shrink-0 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700
-                   transition-colors hover:border-gray-400 hover:bg-gray-100 hover:text-gray-900
-                   focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2">
-                            Reset
+                        <a id="schedule-clear-link" href="{{ route('reports.index') }}" class="{{ request()->hasAny(['search', 'status', 'due_status']) ? '' : 'hidden' }}
+                   shrink-0 rounded-lg border border-gray-300 px-4 py-2
+                   text-sm font-medium text-gray-700 transition-colors
+                   hover:border-gray-400 hover:bg-gray-100 hover:text-gray-900
+                   focus:outline-none">
+                            Clear
                         </a>
+
                     </div>
 
                 </div>

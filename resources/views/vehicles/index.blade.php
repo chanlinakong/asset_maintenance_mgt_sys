@@ -42,14 +42,14 @@
         <div class="overflow-hidden rounded-xl bg-white shadow-sm">
 
             <div class="p-4 sm:p-6">
-                <form method="GET" action="{{ route('vehicles.index') }}">
+                <form method="GET" action="{{ route('vehicles.index') }}" id="vehicle-filter-form">
                     <div class="flex flex-col gap-3 sm:flex-row sm:items-center justify-end">
-                       
+
                         <input type="search" name="search" value="{{ $search }}"
-                        placeholder="Search by code, name, type, brand..." class="w-full rounded-lg border border-gray-300 px-4 py-2
-                                        focus:border-gray-500 focus:outline-none
-                                        sm:max-w-md">
-                        
+                            placeholder="Search by code, name, type, brand..." class="w-full rounded-lg border border-gray-300 px-4 py-2
+                                                            focus:border-gray-500 focus:outline-none
+                                                            sm:max-w-md">
+
                         <select name="status" class="rounded-lg border border-gray-300 px-4 py-2">
                             <option value="">All Statuses</option>
 
@@ -63,153 +63,158 @@
                         </select>
 
                         <button type="submit" class="rounded-lg bg-gray-900 px-5 py-2 text-white
-                                           hover:bg-gray-800">
+                                                               hover:bg-gray-800">
                             Search
                         </button>
 
-                        @if ($search || $status)
-                            <a href="{{ route('vehicles.index') }}" class="rounded-lg border border-gray-300 px-5 py-2
-                                                               text-center hover:bg-gray-50">
-                                Clear
-                            </a>
-                        @endif
+                        <a id="vehicle-clear-link" href="{{ route('vehicles.index') }}"
+                            class="{{ $search || $status ? '' : 'hidden' }} rounded-lg border border-gray-300 px-5 py-2 text-center hover:bg-gray-50">
+                            Clear
+                        </a>
 
                     </div>
                 </form>
             </div>
-            <div class="overflow-x-auto">
 
+            <div class="overflow-x-auto" id="vehicles-results">
 
-                <table class="min-w-full text-left text-sm">
-
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3">
-                                Code
-                            </th>
-
-                            <th class="px-6 py-3">
-                                Name
-                            </th>
-
-                            <th class="px-6 py-3">
-                                Type
-                            </th>
-
-                            <th class="px-6 py-3">
-                                Registration
-                            </th>
-
-                            <th class="px-6 py-3">
-                                Status
-                            </th>
-
-                            <th class="px-6 py-3 text-right">
-                                Actions
-                            </th>
-                        </tr>
-                    </thead>
-
-                    <tbody class="divide-y">
-
-                        @forelse($vehicles as $vehicle)
-
-                            <tr>
-
-                                <td class="px-6 py-4 font-medium">
-                                    {{ $vehicle->vehicle_code }}
-                                </td>
-
-                                <td class="px-6 py-4">
-                                    {{ $vehicle->name }}
-                                </td>
-
-                                <td class="px-6 py-4">
-                                    {{ $vehicle->type }}
-                                </td>
-
-                                <td class="px-6 py-4">
-                                    {{ $vehicle->registration_number ?? '-' }}
-                                </td>
-
-                                @php
-                                    $status = $vehicle->status;
-                                @endphp
-
-
-                                <td class="px-6 py-4">
-                                    <span @class([
-                                        'inline-flex rounded-full px-3 py-1 text-xs font-semibold',
-                                        'bg-green-100 text-green-700' =>
-                                            $status->value === 'active',
-                                        'bg-yellow-100 text-yellow-700' =>
-                                            $status->value === 'maintenance',
-                                        'bg-red-100 text-red-700' =>
-                                            $status->value === 'out_of_service',
-                                    ])>
-                                        {{ str($status->value)->replace('_', ' ')->title() }}
-                                    </span>
-                                </td>
-
-                                <td class="px-6 py-4">
-
-                                    <div class="flex justify-end gap-2">
-
-                                        <a href="{{ route('vehicles.show', $vehicle) }}"
-                                            class="rounded-lg border px-3 py-1.5 transition-colors
-                                                    hover:border-gray-400 hover:bg-gray-100 hover:text-gray-900
-                                                    focus:outline-none focus:ring-2 focus:ring-gray-300">
-                                            View
-                                        </a>
-
-                                        @if(auth()->user()->role->value === 'admin')
-                                            <a href="{{ route('vehicles.edit', $vehicle) }}"
-                                                class="rounded-lg border px-3 py-1.5 transition-colors
-                                                        hover:border-gray-400 hover:bg-gray-100 hover:text-gray-900
-                                                        focus:outline-none focus:ring-2 focus:ring-gray-300">
-                                                Edit
-                                            </a>
-
-                                            <form method="POST" action="{{ route('vehicles.destroy', $vehicle) }}"
-                                                onsubmit="return confirm('Are you sure you want to delete this vehicle?');">
-                                                @csrf
-                                                @method('DELETE')
-
-                                                <button type="submit"
-                                                    class="rounded-lg border px-3 py-1.5 transition-colors text-red-600 hover:bg-red-50 hover:border-red-300">
-                                                    Delete
-                                                </button>
-                                            </form>
-                                        @endif
-                                    </div>
-
-                                </td>
-
-                            </tr>
-
-                        @empty
-
-                            <tr>
-                                <td colspan="6" class="px-6 py-10 text-center text-gray-500">
-                                    No vehicles found.
-                                </td>
-                            </tr>
-
-                        @endforelse
-
-                    </tbody>
-
-                </table>
+                @include('vehicles.partials.table')
 
             </div>
 
-        </div>
-
-
-        <div>
-            {{ $vehicles->links() }}
         </div>
 
     </div>
 
 @endsection
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('vehicle-filter-form');
+        const results = document.getElementById('vehicles-results');
+        const clearLink = document.getElementById('vehicle-clear-link');
+
+        if (!form || !results) return;
+
+        async function loadVehicles(url, updateHistory = true) {
+            const targetUrl = new URL(url, window.location.origin);
+
+            results.style.opacity = '0.5';
+            results.style.pointerEvents = 'none';
+
+            try {
+                const response = await fetch(targetUrl, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'text/html'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Unable to load vehicles.');
+                }
+
+                results.innerHTML = await response.text();
+
+                const params = targetUrl.searchParams;
+
+                const hasFilters =
+                    (params.get('search') || '').trim() !== '' ||
+                    (params.get('status') || '').trim() !== '';
+
+                if (clearLink) {
+                    clearLink.classList.toggle('hidden', !hasFilters);
+                }
+
+                // Keep the filter controls synchronized with the URL.
+                form.querySelector('[name="search"]').value =
+                    params.get('search') || '';
+
+                form.querySelector('[name="status"]').value =
+                    params.get('status') || '';
+
+                if (updateHistory) {
+                    history.pushState({}, '', targetUrl);
+                }
+            } catch (error) {
+                window.location.href = targetUrl.href;
+            } finally {
+                results.style.opacity = '1';
+                results.style.pointerEvents = '';
+            }
+        }
+
+        // Search and status filter submission.
+        form.addEventListener('submit', event => {
+            event.preventDefault();
+
+            const url = new URL(form.action, window.location.origin);
+            url.search = new URLSearchParams(
+                new FormData(form)
+            ).toString();
+
+            loadVehicles(url);
+        });
+
+        // Clear search and status filters.
+        clearLink?.addEventListener('click', event => {
+            event.preventDefault();
+
+            form.querySelector('[name="search"]').value = '';
+            form.querySelector('[name="status"]').value = '';
+
+            loadVehicles(clearLink.href);
+        });
+
+        // Intercept pagination links only.
+        // View, Edit, and other action links should navigate normally.
+        results.addEventListener('click', event => {
+            const link = event.target.closest(
+                'nav[role="navigation"] a'
+            );
+
+            if (!link || !results.contains(link)) return;
+
+            if (
+                link.target === '_blank' ||
+                event.ctrlKey ||
+                event.metaKey ||
+                event.shiftKey ||
+                event.altKey
+            ) return;
+
+            const url = new URL(link.href, window.location.origin);
+
+            if (url.origin !== window.location.origin) return;
+
+            event.preventDefault();
+            loadVehicles(url);
+        });
+
+        const link = event.target.closest('a');
+
+        if (!link || !results.contains(link)) return;
+
+        if (
+            link.target === '_blank' ||
+            event.ctrlKey ||
+            event.metaKey ||
+            event.shiftKey ||
+            event.altKey
+        ) return;
+
+        const url = new URL(link.href, window.location.origin);
+
+        if (url.origin !== window.location.origin) return;
+
+        event.preventDefault();
+        loadVehicles(url);
+    });
+
+    // Support browser Back and Forward buttons.
+    window.addEventListener('popstate', () => {
+        loadVehicles(window.location.href, false);
+    });
+    });
+</script>

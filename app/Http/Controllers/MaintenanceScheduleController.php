@@ -127,6 +127,10 @@ class MaintenanceScheduleController extends Controller
             ->paginate(10)
             ->withQueryString();
 
+        if ($request->ajax()) {
+            return view('maintenance-schedules.partials.table', compact('schedules'));
+        }
+
         return view('maintenance-schedules.index', [
             'schedules' => $schedules,
             'search' => $search,

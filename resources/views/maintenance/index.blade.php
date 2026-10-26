@@ -20,7 +20,8 @@
 
             </div>
 
-            <a href="{{ route('maintenance.create') }}" class="rounded-lg bg-gray-900 transition-colors hover:bg-gray-700 px-4 py-2 text-center text-white">
+            <a href="{{ route('maintenance.create') }}"
+                class="rounded-lg bg-gray-900 transition-colors hover:bg-gray-700 px-4 py-2 text-center text-white">
                 + Report Maintenance
             </a>
 
@@ -47,7 +48,7 @@
         <div class="overflow-hidden rounded-xl bg-white shadow-sm">
             {{-- Filter form --}}
             <div class="border-b border-gray-200">
-                <form method="GET" action="{{ route('maintenance.index') }}" class="p-4 sm:p-6">
+                <form method="GET" action="{{ route('maintenance.index') }}" class="p-4 sm:p-6" id="maintenance-form">
 
                     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
 
@@ -55,13 +56,13 @@
                         <div class="lg:col-span-2">
                             <input type="search" name="search" value="{{ $search }}" placeholder="Search maintenance..."
                                 class="min-w-0 w-full rounded-lg border border-gray-300 px-3 py-2
-                                               focus:border-gray-500 focus:outline-none">
+                                                               focus:border-gray-500 focus:outline-none">
                         </div>
 
                         {{-- Vehicle --}}
                         <div class="lg:col-span-2">
                             <select name="vehicle_id" class="w-full rounded-lg border border-gray-300 px-3 py-2
-                                               focus:border-gray-500 focus:outline-none">
+                                                               focus:border-gray-500 focus:outline-none">
                                 <option value="">All Vehicles</option>
 
                                 @foreach ($vehicles as $vehicle)
@@ -74,7 +75,7 @@
 
                         {{-- Date Period --}}
                         <select name="period" id="period" class="w-full rounded-lg border border-gray-300 px-3 py-2
-                                               focus:border-gray-500 focus:outline-none">
+                                                               focus:border-gray-500 focus:outline-none">
                             <option value="">All Dates</option>
                             <option value="today" @selected(request('period') === 'today')>Today</option>
                             <option value="yesterday" @selected(request('period') === 'yesterday')>Yesterday</option>
@@ -89,7 +90,7 @@
 
                         {{-- Maintenance Type --}}
                         <select name="type" class="w-full rounded-lg border border-gray-300 px-3 py-2
-                                               focus:border-gray-500 focus:outline-none">
+                                                               focus:border-gray-500 focus:outline-none">
                             <option value="">All Types</option>
 
                             @foreach ($types as $maintenanceType)
@@ -101,7 +102,7 @@
 
                         {{-- Status --}}
                         <select name="status" class="w-full rounded-lg border border-gray-300 px-3 py-2
-                                               focus:border-gray-500 focus:outline-none">
+                                                               focus:border-gray-500 focus:outline-none">
                             <option value="">All Statuses</option>
 
                             @foreach ($statuses as $maintenanceStatus)
@@ -124,7 +125,7 @@
 
                                 <input type="date" name="from" id="from" value="{{ request('from') }}"
                                     max="{{ request('to') }}" class="w-full rounded-lg border border-gray-300 px-3 py-2
-                                                       focus:border-gray-500 focus:outline-none">
+                                                                       focus:border-gray-500 focus:outline-none">
                             </div>
 
                             <div>
@@ -134,7 +135,7 @@
 
                                 <input type="date" name="to" id="to" value="{{ request('to') }}" min="{{ request('from') }}"
                                     class="w-full rounded-lg border border-gray-300 px-3 py-2
-                                                       focus:border-gray-500 focus:outline-none">
+                                                                       focus:border-gray-500 focus:outline-none">
                             </div>
 
                         </div>
@@ -143,185 +144,27 @@
                     {{-- Actions --}}
                     <div class="mt-4 flex flex-wrap items-center justify-end gap-2">
                         <button type="submit" class="rounded-lg bg-gray-900 px-5 py-2 text-sm font-medium
-                                               text-white transition-colors hover:bg-gray-700">
+                                                               text-white transition-colors hover:bg-gray-700">
                             Search
                         </button>
 
-                        @if ($search || $status || $type || $vehicleId || request('period') || request('from') || request('to'))
-                            <a href="{{ route('maintenance.index') }}" class="rounded-lg border border-gray-300 px-5 py-2 text-sm
-                                                                               font-medium text-gray-700 transition-colors
-                                                                               hover:border-gray-400 hover:bg-gray-50">
-                                Clear
-                            </a>
-                        @endif
+                        <a id="maintenance-clear-link" href="{{ route('maintenance.index') }}" class="{{ $search || $status || $type || $vehicleId || request('period') || request('from') || request('to') ? '' : 'hidden' }}
+                       rounded-lg border border-gray-300 px-5 py-2 text-sm
+                       font-medium text-gray-700 transition-colors
+                       hover:border-gray-400 hover:bg-gray-50">
+                            Clear
+                        </a>
                     </div>
 
                 </form>
             </div>
 
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto" id="maintenance-table-data">
 
-                <table class="min-w-full text-left text-sm">
-
-                    <thead class="bg-gray-50">
-
-                        <tr>
-
-                            <th class="px-6 py-3">
-                                Vehicle
-                            </th>
-
-                            <th class="px-6 py-3">
-                                Maintenance
-                            </th>
-
-                            <th class="px-6 py-3">
-                                Type
-                            </th>
-
-                            <th class="px-6 py-3">
-                                Status
-                            </th>
-
-                            <th class="px-6 py-3">
-                                Reported
-                            </th>
-
-                            <th class="px-6 py-3">
-                                Cost
-                            </th>
-
-                            <th class="px-6 py-3 text-right">
-                                Actions
-                            </th>
-
-                        </tr>
-
-                    </thead>
-
-
-                    <tbody class="divide-y">
-
-                        @forelse($maintenanceRecords as $maintenance)
-
-                                            <tr>
-
-                                                <td class="px-6 py-4 font-medium">
-                                                    {{ $maintenance->vehicle->vehicle_code }}
-                                                </td>
-
-                                                <td class="px-6 py-4">
-                                                    {{ $maintenance->title }}
-                                                </td>
-                                                @php
-                                                    $maintenanceType = $maintenance->type;
-                                                @endphp
-
-                                                <td class="px-6 py-4">
-                                                    <span
-                                                        class="inline-flex rounded-full bg-gray-100 px-3 py-1
-                                                                                                                                                                                                                                                                                                                                   text-xs font-semibold text-gray-700">
-                                                        {{ str($maintenanceType->value)
-                                ->replace('_', ' ')
-                                ->title() }}
-                                                    </span>
-                                                </td>
-
-                                                @php
-                                                    $maintenanceStatus = $maintenance->status;
-                                                @endphp
-
-                                                <td class="px-6 py-4">
-                                                    <span @class([
-                                                        'inline-flex rounded-full px-3 py-1 text-xs font-semibold',
-
-                                                        'bg-yellow-100 text-yellow-700' =>
-                                                            $maintenanceStatus->value === 'pending',
-
-                                                        'bg-blue-100 text-blue-700' =>
-                                                            $maintenanceStatus->value === 'in_progress',
-
-                                                        'bg-green-100 text-green-700' =>
-                                                            $maintenanceStatus->value === 'completed',
-
-                                                        'bg-red-100 text-red-700' =>
-                                                            $maintenanceStatus->value === 'cancelled',
-                                                    ])>
-                                                        {{ str($maintenanceStatus->value)
-                                ->replace('_', ' ')
-                                ->title() }}
-                                                    </span>
-                                                </td>
-
-                                                <td class="px-6 py-4">
-                                                    {{ $maintenance->reported_at
-                                ->format('d M Y H:i') }}
-                                                </td>
-
-                                                <td class="px-6 py-4">
-                                                    ${{ number_format(
-                                (float) $maintenance->cost,
-                                2
-                            ) }}
-                                                </td>
-
-                                                <td class="px-6 py-4">
-                                                    <div class="flex justify-end gap-2">
-
-                                                        <a href="{{ route('maintenance.show', $maintenance) }}"
-                                                            class="rounded-lg border px-3 py-1.5 transition-colors
-                                                                hover:border-gray-400 hover:bg-gray-100 hover:text-gray-900
-                                                                focus:outline-none focus:ring-2 focus:ring-gray-300">View
-                                                        </a>
-
-                                                        <a href="{{ route('maintenance.edit', $maintenance) }}"
-                                                            class="rounded-lg border px-3 py-1.5 transition-colors
-                                                                hover:border-gray-400 hover:bg-gray-100 hover:text-gray-900
-                                                                focus:outline-none focus:ring-2 focus:ring-gray-300">
-                                                            Edit
-                                                        </a>
-
-                                                        @if(auth()->user()->role->value === 'admin')
-                                                            <form method="POST" action="{{ route('maintenance.destroy', $maintenance) }}"
-                                                                onsubmit="return confirm('Are you sure you want to delete this maintenance record?')">
-                                                                @csrf
-                                                                @method('DELETE')
-
-                                                                <button type="submit"
-                                                                    class="rounded-lg border px-3 py-1.5 transition-colors text-red-600 hover:bg-red-50 hover:border-red-300">
-                                                                    Delete
-                                                                </button>
-
-                                                            </form>
-                                                        @endif
-                                                    </div>
-                                                </td>
-
-                                            </tr>
-
-                        @empty
-
-                            <tr>
-
-                                <td colspan="7" class="px-6 py-10 text-center text-gray-500">
-                                    No maintenance records found.
-                                </td>
-
-                            </tr>
-
-                        @endforelse
-
-                    </tbody>
-
-                </table>
+                @include('maintenance.partials.table')
 
             </div>
 
-        </div>
-
-
-        <div>
-            {{ $maintenanceRecords->links() }}
         </div>
 
     </div>
@@ -329,35 +172,148 @@
 @endsection
 
 <script>
+
     document.addEventListener('DOMContentLoaded', function () {
         const period = document.getElementById('period');
         const dateFields = document.getElementById('custom-date-fields');
         const from = document.getElementById('from');
         const to = document.getElementById('to');
 
-        if (!period || !dateFields) return;
+        const clearLink = document.getElementById('maintenance-clear-link');
 
-        function updateDateFields() {
-            const isCustom = period.value === 'custom';
+        const maintenanceForm = document.getElementById('maintenance-form');
+        const maintenanceTableData = document.getElementById('maintenance-table-data');
 
-            dateFields.classList.toggle('hidden', !isCustom);
+        // Date filter behavior
+        if (period && dateFields) {
+            function updateDateFields() {
+                const isCustom = period.value === 'custom';
 
-            if (from && to) {
-                from.required = isCustom;
-                to.required = isCustom;
+                dateFields.classList.toggle('hidden', !isCustom);
+
+                if (from && to) {
+                    from.required = isCustom;
+                    to.required = isCustom;
+                }
+            }
+
+            period.addEventListener('change', updateDateFields);
+
+            from?.addEventListener('change', function () {
+                if (to) to.min = from.value;
+            });
+
+            to?.addEventListener('change', function () {
+                if (from) from.max = to.value;
+            });
+
+            updateDateFields();
+        }
+
+        // AJAX refresh
+        if (!maintenanceForm || !maintenanceTableData) return;
+
+        async function refreshMaintenance(url, updateHistory = true) {
+            const targetUrl = new URL(url, window.location.origin);
+
+            maintenanceTableData.classList.add('opacity-50', 'pointer-events-none');
+
+            try {
+                const response = await fetch(targetUrl, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'text/html'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Unable to load maintenance records.');
+                }
+
+                maintenanceTableData.innerHTML = await response.text();
+
+                const params = targetUrl.searchParams;
+
+                const hasFilters = [
+                    'search', 'status', 'type', 'vehicle_id',
+                    'period', 'from', 'to'
+                ].some(key => (params.get(key) || '').trim() !== '');
+
+                if (clearLink) {
+                    clearLink.classList.toggle('hidden', !hasFilters);
+                }
+
+                if (updateHistory) {
+                    history.pushState({}, '', targetUrl);
+                }
+            } catch (error) {
+                window.location.href = targetUrl.href;
+            } finally {
+                maintenanceTableData.classList.remove('opacity-50', 'pointer-events-none');
             }
         }
 
-        period.addEventListener('change', updateDateFields);
+        // Submit filters without reloading the whole page
+        maintenanceForm.addEventListener('submit', function (event) {
+            event.preventDefault();
 
-        from?.addEventListener('change', function () {
-            to.min = from.value;
+            const url = new URL(maintenanceForm.action, window.location.origin);
+            url.search = new URLSearchParams(
+                new FormData(maintenanceForm)
+            ).toString();
+
+            refreshMaintenance(url);
         });
 
-        to?.addEventListener('change', function () {
-            from.max = to.value;
+        clearLink?.addEventListener('click', function (event) {
+            event.preventDefault();
+
+            // Clear filter inputs
+            maintenanceForm.reset();
+
+            // Reset custom date fields
+            const period = maintenanceForm.querySelector('[name="period"]');
+            const from = maintenanceForm.querySelector('[name="from"]');
+            const to = maintenanceForm.querySelector('[name="to"]');
+
+            if (period) period.value = '';
+            if (from) from.value = '';
+            if (to) to.value = '';
+
+            if (period) period.dispatchEvent(new Event('change'));
+
+            // Load the maintenance page without any query parameters
+            refreshMaintenance(clearLink.href);
         });
 
-        updateDateFields();
+        // Handle pagination links only, including AJAX-inserted links
+        maintenanceTableData.addEventListener('click', function (event) {
+            const link = event.target.closest(
+                'nav[role="navigation"] a'
+            );
+
+            if (!link || !maintenanceTableData.contains(link)) return;
+
+            if (
+                link.target === '_blank' ||
+                event.ctrlKey ||
+                event.metaKey ||
+                event.shiftKey ||
+                event.altKey
+            ) return;
+
+            const url = new URL(link.href, window.location.origin);
+
+            if (url.origin !== window.location.origin) return;
+
+            event.preventDefault();
+            refreshMaintenance(url);
+        });
+
+        // Support browser Back and Forward
+        window.addEventListener('popstate', function () {
+            refreshMaintenance(window.location.href, false);
+        });
     });
+
 </script>

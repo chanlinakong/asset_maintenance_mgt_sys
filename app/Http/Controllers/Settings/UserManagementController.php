@@ -49,6 +49,10 @@ class UserManagementController extends Controller
             ->paginate(10)
             ->withQueryString();
 
+        if ($request->ajax()) {
+            return view('settings.users.partials.table', compact('users'));
+        }
+
         return view('settings.users.index', compact('users'));
     }
 
@@ -158,7 +162,7 @@ class UserManagementController extends Controller
                 }
             }
 
-            $target->is_active = ! $target->is_active;
+            $target->is_active = !$target->is_active;
             $target->save();
         });
 

@@ -27,7 +27,7 @@
 
             </div>
 
-
+            
             <div class="flex gap-2">
 
                 @if(auth()->user()->role->value === 'admin')
