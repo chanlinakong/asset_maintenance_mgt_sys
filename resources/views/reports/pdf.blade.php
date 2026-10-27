@@ -1,387 +1,244 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
-
-    <title>
-        Asset Maintenance Report
-    </title>
+    <title>{{ $report['title'] }}</title>
 
     <style>
+        @page {
+            margin: 28px 25px 42px;
+        }
+
         body {
             font-family: DejaVu Sans, sans-serif;
-            font-size: 12px;
-            color: #222;
+            font-size: 9px;
+            color: #1f2937;
+            line-height: 1.45;
         }
 
-        h1 {
-            margin-bottom: 5px;
+        .header {
+            background-color: #1f2937;
+            color: #ffffff;
+            padding: 18px 20px;
+            margin-bottom: 16px;
         }
 
-        h2 {
-            margin-top: 25px;
-        }
-
-        .subtitle {
-            color: #666;
-            margin-bottom: 20px;
-        }
-
-        .summary {
-            width: 100%;
-            margin-bottom: 25px;
-        }
-
-        .summary td {
-            width: 25%;
-            padding: 10px;
-            border: 1px solid #ddd;
-        }
-
-        .label {
-            color: #666;
-            font-size: 10px;
-        }
-
-        .value {
-            font-size: 16px;
+        .header h1 {
+            font-size: 19px;
+            margin: 0 0 5px;
             font-weight: bold;
-            margin-top: 5px;
         }
 
-        table {
+        .header p {
+            margin: 0;
+            color: #d1d5db;
+            font-size: 9px;
+        }
+
+        .metadata {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
+            margin-bottom: 18px;
         }
 
-        th {
-            background: #f3f4f6;
+        .metadata td {
+            width: 50%;
+            padding: 5px 8px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .metadata strong {
+            color: #374151;
+        }
+
+        .section-title {
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #111827;
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
+        }
+
+        .report-table thead {
+            display: table-header-group;
+        }
+
+        .report-table th {
+            background-color: #374151;
+            color: #ffffff;
+            font-size: 8px;
+            font-weight: bold;
+            text-align: left;
+            padding: 8px 5px;
+            border: 1px solid #374151;
+            overflow-wrap: break-word;
+        }
+
+        .report-table td {
+            padding: 6px 5px;
+            border: 1px solid #e5e7eb;
+            vertical-align: middle;
+            overflow-wrap: break-word;
+        }
+
+        .report-table tbody tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+
+        .report-table tbody tr.total-row {
+            background-color: #f3f4f6;
             font-weight: bold;
         }
 
-        th,
-        td {
-            border: 1px solid #ddd;
-            padding: 7px;
-            text-align: left;
+        .report-table tbody tr.total-row td {
+            border-top: 2px solid #9ca3af;
+            color: #111827;
         }
 
-        .right {
+        .numeric {
             text-align: right;
+            white-space: nowrap;
+        }
+
+        .empty {
+            padding: 20px;
+            text-align: center;
+            color: #6b7280;
         }
 
         .footer {
-            margin-top: 30px;
-            color: #777;
-            font-size: 10px;
+            position: fixed;
+            bottom: -25px;
+            left: 0;
+            right: 0;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 7px;
+            color: #6b7280;
+            font-size: 8px;
+        }
+
+        .footer .left {
+            float: left;
+        }
+
+        .footer .right {
+            float: right;
+        }
+
+        .footer .page-number:after {
+            content: counter(page);
         }
     </style>
 </head>
 
 <body>
 
-    <h1>
-        Asset Maintenance Report
-    </h1>
-
-    <div class="subtitle">
-
-        @if($from || $to)
-
-            Period:
-            {{ $from ?? 'Beginning' }}
-            -
-            {{ $to ?? 'Present' }}
-
-        @else
-
-            All maintenance records
-
-        @endif
-
+    {{-- Report title --}}
+    <div class="header">
+        <h1>{{ $report['title'] }}</h1>
+        <p>Official Maintenance Management Report</p>
     </div>
 
-
-    {{-- Summary --}}
-
-    <table class="summary">
-
+    {{-- Report metadata --}}
+    <table class="metadata">
         <tr>
-
             <td>
-                <div class="label">
-                    Maintenance Records
-                </div>
-
-                <div class="value">
-                    {{ $totalRecords }}
-                </div>
+                <strong>Generated At:</strong>
+                {{ $report['generated_at'] ?? now()->format('d M Y h:i A') }}
             </td>
-
             <td>
-                <div class="label">
-                    Total Cost
-                </div>
-
-                <div class="value">
-                    ${{ number_format($totalCost, 2) }}
-                </div>
+                <strong>Generated By:</strong>
+                {{ $report['generated_by'] ?? auth()->user()?->name ?? 'System' }}
             </td>
-
-            <td>
-                <div class="label">
-                    Completed
-                </div>
-
-                <div class="value">
-                    {{ $completedCount }}
-                </div>
-            </td>
-
-            <td>
-                <div class="label">
-                    In Progress
-                </div>
-
-                <div class="value">
-                    {{ $inProgressCount }}
-                </div>
-            </td>
-
         </tr>
-
+        <tr>
+            <td>
+                <strong>Date Range:</strong>
+                {{ $report['period_label'] ?? 'All available dates' }}
+            </td>
+            <td>
+                <strong>Vehicle Status:</strong>
+                {{ $report['vehicle_status_label'] ?? 'All statuses' }}
+            </td>
+        </tr>
     </table>
 
+    <div class="section-title">Report Details</div>
 
-    {{-- Cost by vehicle --}}
-
-    <h2>
-        Maintenance Cost by Vehicle
-    </h2>
-
-    <table>
-
+    {{-- Report data --}}
+    <table class="report-table">
         <thead>
-
             <tr>
-
-                <th>
-                    Vehicle
-                </th>
-
-                <th>
-                    Name
-                </th>
-
-                <th>
-                    Records
-                </th>
-
-                <th class="right">
-                    Cost
-                </th>
-
+                @foreach ($report['headers'] as $heading)
+                    <th>{{ $heading }}</th>
+                @endforeach
             </tr>
-
         </thead>
 
         <tbody>
+            @forelse ($report['rows'] as $row)
+                @php
+                    $isTotal = collect($row)->contains(
+                        fn($value) => is_string($value)
+                            && str_starts_with(
+                                strtoupper(trim($value)),
+                                'TOTAL'
+                            )
+                    );
+                @endphp
 
-            @forelse($costByVehicle as $item)
+                <tr @if ($isTotal) class="total-row" @endif>
+                    @foreach ($row as $index => $value)
+                        @php
+                            $heading = $report['headers'][$index] ?? '';
+                            $isCost = str_contains(
+                                strtolower($heading),
+                                'cost'
+                            );
+                            $isNumeric = is_numeric($value)
+                                && $value !== ''
+                                && $isCost;
+                        @endphp
 
-                <tr>
-
-                    <td>
-                        {{ $item['vehicle']->vehicle_code }}
-                    </td>
-
-                    <td>
-                        {{ $item['vehicle']->name }}
-                    </td>
-
-                    <td>
-                        {{ $item['count'] }}
-                    </td>
-
-                    <td class="right">
-                        ${{ number_format($item['cost'], 2) }}
-                    </td>
-
+                        <td @if ($isNumeric) class="numeric" @endif>
+                            @if ($isNumeric)
+                                ${{ number_format((float) $value, 2) }}
+                            @elseif (
+                                    is_numeric($value) && $value !== ''
+                                    && str_contains(strtolower($heading), 'kilometers')
+                                )
+                                {{ number_format((float) $value, 0) }}
+                            @else
+                                {{ $value ?? '—' }}
+                            @endif
+                        </td>
+                    @endforeach
                 </tr>
-
             @empty
-
                 <tr>
-
-                    <td colspan="4">
-                        No data available.
+                    <td class="empty" colspan="{{ max(count($report['headers']), 1) }}">
+                        No records found for the selected filters.
                     </td>
-
                 </tr>
-
             @endforelse
-
         </tbody>
-
     </table>
 
-
-    {{-- Cost by type --}}
-
-    <h2>
-        Maintenance by Type
-    </h2>
-
-    <table>
-
-        <thead>
-
-            <tr>
-
-                <th>
-                    Type
-                </th>
-
-                <th>
-                    Records
-                </th>
-
-                <th class="right">
-                    Total Cost
-                </th>
-
-            </tr>
-
-        </thead>
-
-        <tbody>
-
-            @forelse($costByType as $item)
-
-                    <tr>
-
-                        <td>
-                            {{ str($item['type']->value)
-                ->replace('_', ' ')
-                ->title() }}
-                        </td>
-
-                        <td>
-                            {{ $item['count'] }}
-                        </td>
-
-                        <td class="right">
-                            ${{ number_format($item['cost'], 2) }}
-                        </td>
-
-                    </tr>
-
-            @empty
-
-                <tr>
-
-                    <td colspan="3">
-                        No data available.
-                    </td>
-
-                </tr>
-
-            @endforelse
-
-        </tbody>
-
-    </table>
-
-
-    {{-- Detailed records --}}
-
-    <h2>
-        Maintenance Details
-    </h2>
-
-    <table>
-
-        <thead>
-
-            <tr>
-
-                <th>
-                    Date
-                </th>
-
-                <th>
-                    Vehicle
-                </th>
-
-                <th>
-                    Maintenance
-                </th>
-
-                <th>
-                    Status
-                </th>
-
-                <th class="right">
-                    Cost
-                </th>
-
-            </tr>
-
-        </thead>
-
-        <tbody>
-
-            @forelse($records as $record)
-
-                    <tr>
-
-                        <td>
-                            {{ $record->reported_at->format('d M Y') }}
-                        </td>
-
-                        <td>
-                            {{ $record->vehicle->vehicle_code }}
-                        </td>
-
-                        <td>
-                            {{ $record->title }}
-                        </td>
-
-                        <td>
-                            {{ str($record->status->value)
-                ->replace('_', ' ')
-                ->title() }}
-                        </td>
-
-                        <td class="right">
-                            ${{ number_format((float) $record->cost, 2) }}
-                        </td>
-
-                    </tr>
-
-            @empty
-
-                <tr>
-
-                    <td colspan="5">
-                        No maintenance records found.
-                    </td>
-
-                </tr>
-
-            @endforelse
-
-        </tbody>
-
-    </table>
-
-
+    {{-- Footer --}}
     <div class="footer">
+        <span class="left">
+            {{ $report['title'] }} · Confidential
+        </span>
 
-        Generated by Asset Maintenance System
-
+        <span class="right">
+            Page <span class="page-number"></span>
+        </span>
     </div>
 
 </body>

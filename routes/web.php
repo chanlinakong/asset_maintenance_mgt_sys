@@ -36,6 +36,11 @@ Route::middleware(['auth', 'role:admin,staff'])->group(function () {
         'pdf',
     ])->name('reports.pdf');
 
+    Route::get('/reports/excel', [
+        ReportController::class,
+        'excel',
+    ])->name('reports.excel');
+
 });
 
 use App\Http\Controllers\ProfileController;
@@ -70,7 +75,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::prefix('settings')
         ->name('settings.')
         ->group(function () {
-            
+
             Route::get('/', [SettingsController::class, 'index'])
                 ->name('index');
 

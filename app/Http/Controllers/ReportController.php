@@ -8,8 +8,13 @@ use App\Models\MaintenanceRecord;
 use App\Models\Vehicle;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Pagination\LengthAwarePaginator;
+use App\Exports\Reports\ReportExcelExport;
+use App\Http\Requests\GenerateReportRequest;
+use App\Services\ReportService;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Enums\VehicleStatus;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ReportController extends Controller
 {
@@ -178,96 +183,49 @@ class ReportController extends Controller
             'to' => $to?->format('Y-m-d'),
             'status' => $status,
             'type' => $type,
+            'vehicleStatuses' => VehicleStatus::cases(),
         ]);
     }
-
-
-    public function pdf(Request $request)
-    {
-        $from = $request->date('from');
-        $to = $request->date('to');
-        $status = $request->string('status')->trim()->toString();
-        $type = $request->string('type')->trim()->toString();
-
-        $records = MaintenanceRecord::query()
-            ->with('vehicle')
-            ->when($from, function ($query) use ($from) {
-                $query->whereDate('reported_at', '>=', $from);
-            })
-            ->when($to, function ($query) use ($to) {
-                $query->whereDate('reported_at', '<=', $to);
-            })
-            ->when($status, function ($query) use ($status) {
-                $query->where('status', $status);
-            })
-            ->when($type, function ($query) use ($type) {
-                $query->where('type', $type);
-            })
-            ->latest('reported_at')
-            ->get();
-
-        $totalRecords = $records->count();
-
-        $totalCost = $records->sum(
-            fn($record) => (float) $record->cost
+    public function excel(
+        GenerateReportRequest $request,
+        ReportService $reportService
+    ) {
+        $report = $reportService->generate(
+            $request->validated()
         );
 
-        $completedCount = $records->where(
-            'status',
-            MaintenanceStatus::Completed
-        )->count();
+        $filename = str($report['title'])
+            ->slug()
+            ->append('-' . now()->format('Y-m-d-His') . '.xlsx')
+            ->toString();
 
-        $inProgressCount = $records->where(
-            'status',
-            MaintenanceStatus::InProgress
-        )->count();
+        return Excel::download(
+            new ReportExcelExport($report),
+            $filename
+        );
+    }
 
-        $pendingCount = $records->where(
-            'status',
-            MaintenanceStatus::Pending
-        )->count();
+    public function pdf(
+        GenerateReportRequest $request,
+        ReportService $reportService
+    ) {
+        $report = $reportService->generate(
+            $request->validated()
+        );
 
-        $costByVehicle = $records
-            ->groupBy('vehicle_id')
-            ->map(function ($records) {
-                return [
-                    'vehicle' => $records->first()->vehicle,
-                    'count' => $records->count(),
-                    'cost' => $records->sum(
-                        fn($record) => (float) $record->cost
-                    ),
-                ];
-            })
-            ->sortByDesc('cost');
+        $report['generated_at'] = now()->format('d M Y h:i A');
+        $report['generated_by'] = $request->user()->name;
 
-        $costByType = $records
-            ->groupBy('type')
-            ->map(function ($records) {
-                return [
-                    'type' => $records->first()->type,
-                    'count' => $records->count(),
-                    'cost' => $records->sum(
-                        fn($record) => (float) $record->cost
-                    ),
-                ];
-            })
-            ->sortByDesc('cost');
+        $filename = str($report['title'])
+            ->slug()
+            ->append('-' . now()->format('Y-m-d-His') . '.pdf')
+            ->toString();
 
         $pdf = Pdf::loadView('reports.pdf', [
-            'records' => $records,
-            'totalRecords' => $totalRecords,
-            'totalCost' => $totalCost,
-            'completedCount' => $completedCount,
-            'inProgressCount' => $inProgressCount,
-            'pendingCount' => $pendingCount,
-            'costByVehicle' => $costByVehicle,
-            'costByType' => $costByType,
-            'from' => $from?->format('Y-m-d'),
-            'to' => $to?->format('Y-m-d'),
-        ]);
+            'report' => $report,
+        ])
+            ->setPaper('a4', 'landscape');
 
-        return $pdf->download(
-            'vehicle-maintenance-report.pdf'
-        );
+        return $pdf->download($filename);
     }
 }

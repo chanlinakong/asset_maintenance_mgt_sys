@@ -434,7 +434,7 @@
                 This vehicle will be deleted and removed from active records.
             </p>
 
-            <form method="POST" action="{{ route('vehicles.destroy', $vehicle) }}" class="mt-4"
+            <form method="POST" action="{{ route('vehicles.destroy', $vehicle) }}" class="mt-4 flex justify-end"
                 onsubmit="return confirm('Are you sure you want to delete this vehicle?')">
 
                 @csrf
