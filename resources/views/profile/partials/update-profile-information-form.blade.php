@@ -83,7 +83,7 @@
         </div>
 
         {{-- Save --}}
-        <div class="flex flex-col-reverse gap-3 border-t border-gray-100 pt-5 sm:flex-row sm:items-center">
+        <div class="flex flex-col-reverse gap-3 border-t border-gray-100 pt-5 sm:flex-row sm:items-center sm:justify-end">
 
             <button type="submit"
                     class="inline-flex items-center justify-center rounded-lg
