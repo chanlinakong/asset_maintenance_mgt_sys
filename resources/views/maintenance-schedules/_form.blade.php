@@ -9,7 +9,8 @@
             Vehicle
         </label>
 
-        <select name="vehicle_id" id="vehicle_id" class="mt-1 block w-full rounded-lg px-3 py-2 border border-gray-300" required>
+        <select name="vehicle_id" id="vehicle_id" class="mt-1 block w-full rounded-lg px-3 py-2 border border-gray-300"
+            required>
             <option value="">
                 Select vehicle
             </option>
@@ -40,7 +41,8 @@
         </label>
 
         <input type="text" name="title" id="title" value="{{ old('title', $maintenanceSchedule?->title) }}"
-            placeholder="e.g. Engine Oil Change" class="mt-1 block w-full rounded-lg px-3 py-2 border border-gray-300" required>
+            placeholder="e.g. Engine Oil Change" class="mt-1 block w-full rounded-lg px-3 py-2 border border-gray-300"
+            required>
 
         @error('title')
             <p class="mt-1 text-sm text-red-600">
@@ -79,6 +81,27 @@
         </p>
 
         @error('last_service_date')
+            <p class="mt-1 text-sm text-red-600">
+                {{ $message }}
+            </p>
+        @enderror
+    </div>
+
+    <div>
+        <label for="last_service_kilometers" class="block text-sm font-medium text-gray-700">
+            Last Service Kilometers
+        </label>
+
+        <input type="number" name="last_service_kilometers" id="last_service_kilometers" min="0" step="1" value="{{ old(
+    'last_service_kilometers',
+    $maintenanceSchedule?->last_service_kilometers
+) }}" class="mt-1 block w-full px-3 py-2 border rounded-lg border-gray-300">
+
+        <p class="mt-1 text-xs text-gray-500">
+            Leave empty if the service kilometers are unknown.
+        </p>
+
+        @error('last_service_kilometers')
             <p class="mt-1 text-sm text-red-600">
                 {{ $message }}
             </p>

@@ -47,6 +47,12 @@ class UpdateMaintenanceScheduleRequest extends FormRequest
                 'before_or_equal:today',
             ],
 
+            'last_service_kilometers' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+
             'interval_days' => [
                 'nullable',
                 'integer',

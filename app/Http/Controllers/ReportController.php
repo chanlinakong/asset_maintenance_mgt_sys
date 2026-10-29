@@ -90,9 +90,11 @@ class ReportController extends Controller
             ->get();
 
         $totalRecords = $records->count();
-        $totalCost = $records->sum(
-            fn($record) => (float) $record->cost
-        );
+        $totalCost = $records
+            ->where('status', '!=', MaintenanceStatus::Cancelled)
+            ->sum(
+                fn($record) => (float) $record->cost
+            );
 
         $completedCount = $records->where(
             'status',
@@ -118,10 +120,16 @@ class ReportController extends Controller
         $costByVehicle = $records
             ->groupBy('vehicle_id')
             ->map(function ($records) {
+                $costRecords = $records->where(
+                    'status',
+                    '!=',
+                    MaintenanceStatus::Cancelled
+                );
+
                 return [
                     'vehicle' => $records->first()->vehicle,
                     'count' => $records->count(),
-                    'cost' => $records->sum(
+                    'cost' => $costRecords->sum(
                         fn($record) => (float) $record->cost
                     ),
                 ];
@@ -149,10 +157,15 @@ class ReportController extends Controller
         $costByType = $records
             ->groupBy('type')
             ->map(function ($records) {
+                $costRecords = $records->where(
+                    'status',
+                    '!=',
+                    MaintenanceStatus::Cancelled
+                );
                 return [
                     'type' => $records->first()->type,
                     'count' => $records->count(),
-                    'cost' => $records->sum(
+                    'cost' => $costRecords->sum(
                         fn($record) => (float) $record->cost
                     ),
                 ];

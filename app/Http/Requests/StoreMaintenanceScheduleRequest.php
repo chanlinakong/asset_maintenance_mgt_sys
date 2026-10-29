@@ -54,7 +54,11 @@ class StoreMaintenanceScheduleRequest extends FormRequest
                 'integer',
                 'min:1',
             ],
-
+            'last_service_kilometers' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
             'interval_kilometers' => [
                 'nullable',
                 'integer',
@@ -78,7 +82,7 @@ class StoreMaintenanceScheduleRequest extends FormRequest
                     $query->where('id', '!=', $schedule->id);
                 })
                 ->exists();
-            
+
             if ($duplicateExists) {
                 $validator->errors()->add(
                     'title',

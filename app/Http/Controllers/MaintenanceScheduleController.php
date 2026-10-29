@@ -146,13 +146,12 @@ class MaintenanceScheduleController extends Controller
         ]);
     }
 
-
     public function store(
         StoreMaintenanceScheduleRequest $request
     ): RedirectResponse {
-
         $data = $request->validated();
 
+        // Require at least one maintenance interval.
         if (
             empty($data['interval_days'])
             && empty($data['interval_kilometers'])
@@ -165,24 +164,41 @@ class MaintenanceScheduleController extends Controller
                 ]);
         }
 
-        // No known service history for a new schedule.
-        $nextDueDate = !empty($data['interval_days'])
-            ? today()->addDays((int) $data['interval_days'])
-            : null;
+        // Calculate next due date.
+        $data['next_due_date'] = null;
 
-        MaintenanceSchedule::create([
-            ...$data,
-            'last_service_date' => null,
-            'next_due_date' => $nextDueDate,
-            'last_service_kilometers' => null,
-            'next_due_kilometers' => null,
-            'is_active' => true,
-        ]);
+        if (
+            !empty($data['last_service_date'])
+            && isset($data['interval_days'])
+            && $data['interval_days'] !== ''
+        ) {
+            $data['next_due_date'] = \Carbon\Carbon::parse(
+                $data['last_service_date']
+            )->addDays((int) $data['interval_days']);
+        }
+
+        // Calculate next due kilometers.
+        $data['next_due_kilometers'] = null;
+
+        if (
+            isset($data['last_service_kilometers'])
+            && $data['last_service_kilometers'] !== ''
+            && isset($data['interval_kilometers'])
+            && $data['interval_kilometers'] !== ''
+        ) {
+            $data['next_due_kilometers'] =
+                (int) $data['last_service_kilometers']
+                + (int) $data['interval_kilometers'];
+        }
+
+        // Create the maintenance schedule with all validated fields.
+        MaintenanceSchedule::create($data);
 
         return redirect()
             ->route('maintenance-schedules.index')
             ->with('success', 'Maintenance schedule created successfully.');
     }
+
 
 
     public function show(
@@ -210,20 +226,32 @@ class MaintenanceScheduleController extends Controller
         ]);
     }
 
-
     public function update(
         UpdateMaintenanceScheduleRequest $request,
         MaintenanceSchedule $maintenanceSchedule
     ): RedirectResponse {
-
         $data = $request->validated();
+
+        // Require at least one maintenance interval.
+        if (
+            empty($data['interval_days'])
+            && empty($data['interval_kilometers'])
+        ) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'interval_days' =>
+                        'At least one maintenance interval is required.',
+                ]);
+        }
 
         // Calculate next due date.
         $data['next_due_date'] = null;
 
         if (
-            !is_null($data['last_service_date'] ?? null)
-            && !is_null($data['interval_days'] ?? null)
+            !empty($data['last_service_date'])
+            && isset($data['interval_days'])
+            && $data['interval_days'] !== ''
         ) {
             $data['next_due_date'] = \Carbon\Carbon::parse(
                 $data['last_service_date']
@@ -234,21 +262,23 @@ class MaintenanceScheduleController extends Controller
         $data['next_due_kilometers'] = null;
 
         if (
-            !is_null($data['last_service_kilometers'] ?? null)
-            && !is_null($data['interval_kilometers'] ?? null)
+            isset($data['last_service_kilometers'])
+            && $data['last_service_kilometers'] !== ''
+            && isset($data['interval_kilometers'])
+            && $data['interval_kilometers'] !== ''
         ) {
             $data['next_due_kilometers'] =
                 (int) $data['last_service_kilometers']
                 + (int) $data['interval_kilometers'];
         }
 
+        // Save all updated values.
         $maintenanceSchedule->update($data);
 
         return redirect()
             ->route('maintenance-schedules.show', $maintenanceSchedule)
             ->with('success', 'Maintenance schedule updated successfully.');
     }
-
 
     public function toggleActive(
         MaintenanceSchedule $maintenanceSchedule

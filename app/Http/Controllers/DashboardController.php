@@ -71,10 +71,10 @@ class DashboardController extends Controller
             'monthlyMaintenanceCount' =>
                 $monthlyRecords->count(),
 
-            'monthlyMaintenanceCost' =>
-                $monthlyRecords->sum(
-                    fn(MaintenanceRecord $record) =>
-                        (float) $record->cost
+            'monthlyMaintenanceCost' => $monthlyRecords
+                ->where('status', '!=', MaintenanceStatus::Cancelled)
+                ->sum(
+                    fn(MaintenanceRecord $record) => (float) $record->cost
                 ),
 
             /* Pending maintenance */
@@ -202,6 +202,7 @@ class DashboardController extends Controller
         $endDate = now()->copy()->endOfMonth();
 
         $results = MaintenanceRecord::query()
+            ->where('status', '!=', MaintenanceStatus::Cancelled)
             ->select(
                 DB::raw('YEAR(reported_at) as year'),
                 DB::raw('MONTH(reported_at) as month'),
