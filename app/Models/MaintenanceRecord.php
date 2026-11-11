@@ -78,4 +78,9 @@ class MaintenanceRecord extends Model
             MaintenanceAttachment::class
         )->latest();
     }
+
+    public function recordDefects(): HasMany
+    {
+        return $this->hasMany(MaintenanceRecordDefect::class);
+    }
 }

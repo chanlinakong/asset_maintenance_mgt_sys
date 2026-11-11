@@ -70,4 +70,9 @@ class Vehicle extends Model
             ]);
         }
     }
+
+    public function assetDefects(): HasMany
+    {
+        return $this->hasMany(AssetDefect::class);
+    }
 }

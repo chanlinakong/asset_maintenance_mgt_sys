@@ -12,7 +12,11 @@ class MaintenancePart extends Model
 
     protected $fillable = [
         'maintenance_record_id',
+        'maintenance_repair_work_id',
         'part_id',
+        'part_name',
+        'part_code',
+        'unit',
         'quantity',
         'unit_cost',
         'total_cost',
@@ -21,7 +25,7 @@ class MaintenancePart extends Model
     protected function casts(): array
     {
         return [
-            'quantity' => 'integer',
+            'quantity' => 'decimal:3',
             'unit_cost' => 'decimal:2',
             'total_cost' => 'decimal:2',
         ];
@@ -29,8 +33,14 @@ class MaintenancePart extends Model
 
     public function maintenanceRecord(): BelongsTo
     {
+        return $this->belongsTo(MaintenanceRecord::class);
+    }
+
+    public function repairWork(): BelongsTo
+    {
         return $this->belongsTo(
-            MaintenanceRecord::class
+            MaintenanceRepairWork::class,
+            'maintenance_repair_work_id'
         );
     }
 
