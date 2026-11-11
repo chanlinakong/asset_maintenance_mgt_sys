@@ -10,7 +10,7 @@
         {{-- Page title --}}
         <div class="hidden sm:block">
             <h1 class="text-lg font-semibold">
-                
+
             </h1>
         </div>
 
@@ -28,21 +28,11 @@
             </button>
 
             @auth
-
-                @php
-                    $unreadNotifications =
-                        auth()->user()
-                            ->unreadNotifications()
-                            ->latest()
-                            ->take(5)
-                            ->get();
-                @endphp
-
                 <div x-data="{ open: false }" class="relative">
 
-                    <button @click="open = !open" type="button"
-                        class="relative rounded-lg p-2 text-gray-600 transition hover:bg-gray-100 hover:text-gray-900">
-
+                    <button @click="open = !open" type="button" aria-label="Outstanding maintenance alerts"
+                        :aria-expanded="open" class="relative rounded-lg p-2 text-gray-600 transition
+                       hover:bg-gray-100 hover:text-gray-900">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor" stroke-width="1.8">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -50,74 +40,88 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M10 21h4" />
                         </svg>
 
-                        @if($unreadNotifications->count())
-                            <span
-                                class="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-xs font-bold text-white">
-                                {{ $unreadNotifications->count() }}
+                        @if($outstandingMaintenanceAlerts->isNotEmpty())
+                            <span class="absolute -right-1 -top-1 flex h-5 min-w-5
+                                   items-center justify-center rounded-full
+                                   bg-red-600 px-1 text-xs font-bold text-white">
+                                {{ $outstandingMaintenanceAlerts->count() }}
                             </span>
                         @endif
-
                     </button>
 
-
-                    <div x-show="open" @click.outside="open = false" x-transition
-                        class="absolute right-0 z-50 mt-2 w-80 rounded-xl bg-white shadow-lg ring-1 ring-black/5">
-
-                        <div class="border-b border-gray-100 p-4">
-
+                    <div x-cloak x-show="open" @click.outside="open = false" @keydown.escape.window="open = false"
+                        x-transition class="absolute right-0 z-50 mt-2 w-80 max-w-[calc(100vw-2rem)]
+                       overflow-hidden rounded-xl bg-white shadow-lg
+                       ring-1 ring-black/5">
+                        <div class="flex items-center justify-between border-b
+                            border-gray-100 p-4">
                             <h3 class="font-semibold text-gray-900">
-                                Notifications
+                                Maintenance Alerts
                             </h3>
 
+                            <span class="text-xs text-gray-500">
+                                {{ $outstandingMaintenanceAlerts->count() }} outstanding
+                            </span>
                         </div>
-
 
                         <div class="max-h-96 overflow-y-auto">
 
-                            @forelse(
-                                                    $unreadNotifications
-                                                    as $notification
-                                                )
+                            @forelse($outstandingMaintenanceAlerts->take(5) as $schedule)
+
+                                                @php
+                                                    $status = $schedule->dueStatus(
+                                                        $schedule->vehicle?->current_kilometers
+                                                    );
+
+                                                    $isOverdue = $status === 'overdue';
+                                                @endphp
 
                                                 <a href="{{ route(
-                                    'notifications.read',
-                                    $notification->id
-                                ) }}" class="block border-b border-gray-100 p-4 hover:bg-gray-50">
+                                    'maintenance-schedules.show',
+                                    $schedule->id
+                                ) }}" class="flex gap-3 border-b border-gray-100 p-4
+                                                       transition hover:bg-gray-50">
+                                                    <span class="text-lg">
+                                                        {{ $isOverdue ? '🔴' : '🟡' }}
+                                                    </span>
 
-                                                    <p class="text-sm font-semibold text-gray-900">
-                                                        {{ $notification->data['title'] }}
-                                                    </p>
+                                                    <div class="min-w-0 flex-1">
+                                                        <p class="text-sm font-semibold text-gray-900">
+                                                            {{ $schedule->title }}
+                                                        </p>
 
-                                                    <p class="mt-1 text-xs text-gray-500">
-                                                        {{ $notification->data['message'] }}
-                                                    </p>
+                                                        <p class="mt-1 text-xs text-gray-500">
+                                                            {{ $schedule->vehicle?->vehicle_code ?? '' }} {{ $schedule->vehicle?->name ?? 'Vehicle unavailable' }}
+                                                        </p>
 
+                                                        <p class="mt-1 text-xs font-medium
+                                                        {{ $isOverdue ? 'text-red-600' : 'text-yellow-700' }}">
+                                                            {{ $isOverdue ? 'Overdue' : 'Due soon' }}
+                                                        </p>
+                                                    </div>
                                                 </a>
-
-                                                <div class="border-t border-gray-100 p-3 text-center">
-
-                                                    <a href="{{ route('notifications.index') }}"
-                                                        class="text-sm font-medium text-gray-700 hover:text-gray-900">
-                                                        View all notifications
-                                                    </a>
-
-                                                </div>
 
                             @empty
 
                                 <div class="p-6 text-center text-sm text-gray-500">
-                                    No unread notifications.
+                                    No outstanding maintenance alerts.
                                 </div>
 
                             @endforelse
 
                         </div>
 
+                        <div class="border-t border-gray-100 p-3 text-center">
+                            <a href="{{ route('notifications.index') }}" class="text-sm font-medium text-gray-700
+                               hover:text-gray-900">
+                                View all notifications
+                            </a>
+                        </div>
                     </div>
 
                 </div>
-
             @endauth
+
 
 
             @auth
@@ -151,8 +155,8 @@
                     {{-- Avatar and dropdown trigger --}}
                     <button type="button" @click="open = !open" @keydown.escape.window="open = false"
                         :aria-expanded="open.toString()" aria-label="Open user menu" class="flex h-10 w-10 shrink-0 items-center justify-center
-                           overflow-hidden rounded-full border border-gray-200
-                           bg-gray-100 transition hover:ring-2 hover:ring-blue-200">
+                               overflow-hidden rounded-full border border-gray-200
+                               bg-gray-100 transition hover:ring-2 hover:ring-blue-200">
 
                         @if ($avatarUrl)
                             <img src="{{ $avatarUrl }}" alt="" class="h-full w-full object-cover">
@@ -165,8 +169,8 @@
 
                     {{-- Dropdown menu --}}
                     <div x-cloak x-show="open" @click.outside="open = false" x-transition class="absolute right-0 top-full z-50 mt-3 w-60
-                           overflow-hidden rounded-xl border border-gray-200
-                           bg-white py-2 shadow-lg">
+                               overflow-hidden rounded-xl border border-gray-200
+                               bg-white py-2 shadow-lg">
 
                         {{-- Account summary --}}
                         <div class="border-b border-gray-100 px-4 py-3">
@@ -181,7 +185,7 @@
 
                         {{-- My Account --}}
                         <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-4 py-3 text-sm
-                               text-gray-700 hover:bg-gray-50">
+                                   text-gray-700 hover:bg-gray-50">
 
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none"
                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -198,8 +202,8 @@
                                 @csrf
 
                                 <button type="submit" class="flex w-full items-center gap-3 px-4 py-3
-                                       text-left text-sm text-red-600
-                                       hover:bg-red-50">
+                                           text-left text-sm text-red-600
+                                           hover:bg-red-50">
 
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                                         stroke="currentColor" stroke-width="1.8">

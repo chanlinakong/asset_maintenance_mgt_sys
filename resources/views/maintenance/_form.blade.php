@@ -494,7 +494,7 @@
 
             {{-- PARTS INFORMATION --}}
 
-            <div class="mt-4 rounded-lg border border-blue-100 bg-blue-50 p-4">
+            <!-- <div class="mt-4 rounded-lg border border-blue-100 bg-blue-50 p-4">
 
                 <p class="text-sm font-medium text-blue-900">
                     Parts Cost
@@ -505,7 +505,7 @@
                     used after saving the maintenance record.
                 </p>
 
-            </div>
+            </div> -->
 
         </div>
     @endif

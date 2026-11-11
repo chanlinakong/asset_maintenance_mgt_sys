@@ -98,7 +98,7 @@
 
                 @if($canUpdate)
 
-                     <a href="{{ route('maintenance.edit', $maintenance) }}"
+                    <a href="{{ route('maintenance.edit', $maintenance) }}"
                         class="rounded-lg border border-gray-300 px-4 py-2 text-gray-700 transition-colors hover:border-gray-400 hover:bg-gray-200 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-300">
                         Edit
                     </a>
@@ -128,7 +128,7 @@
                 {{-- Back --}}
 
                 <a href="{{ route('maintenance.index') }}"
-                   class="rounded-lg bg-gray-900 px-4 py-2 text-white transition-colors hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2">
+                    class="rounded-lg bg-gray-900 px-4 py-2 text-white transition-colors hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2">
                     Back
                 </a>
 
@@ -234,7 +234,7 @@
                             {{ str($status->value)
                     ->replace('_', ' ')
                     ->title()
-                                                                                    }}
+                                                                                                }}
 
                         </div>
 
@@ -339,7 +339,7 @@
                             'bg-indigo-100 text-indigo-700' =>
                                 $maintenanceTypeValue === 'inspection',
                         ])>
-                        {{ $maintenanceTypeValue
+                            {{ $maintenanceTypeValue
         ? str($maintenanceTypeValue)
             ->replace('_', ' ')
             ->title()
@@ -411,7 +411,7 @@
                         {{ $maintenance->reported_at
         ? $maintenance->reported_at->format('d M Y H:i')
         : '-'
-                                            }}
+                                                }}
 
                     </p>
 
@@ -430,7 +430,7 @@
                         {{ $maintenance->started_at
         ? $maintenance->started_at->format('d M Y H:i')
         : '-'
-                                            }}
+                                                }}
 
                     </p>
 
@@ -449,7 +449,7 @@
                         {{ $maintenance->completed_at
         ? $maintenance->completed_at->format('d M Y H:i')
         : '-'
-                                            }}
+                                                }}
 
                     </p>
 
@@ -468,7 +468,7 @@
                         {{ $maintenance->service_kilometers !== null
         ? number_format($maintenance->service_kilometers) . ' km'
         : '-'
-                                            }}
+                                                }}
 
                     </p>
 
@@ -541,7 +541,7 @@
 
                     {{-- Parts --}}
 
-                    <div class="flex items-center justify-between">
+                    <!-- <div class="flex items-center justify-between">
 
                         <span class="text-gray-500">
                             Parts
@@ -551,7 +551,7 @@
                             ${{ number_format($partsTotal, 2) }}
                         </span>
 
-                    </div>
+                    </div> -->
 
                     {{-- Labor --}}
 
@@ -620,7 +620,7 @@
                             {{ $maintenance->vehicle?->current_kilometers !== null
         ? number_format($maintenance->vehicle->current_kilometers) . ' km'
         : '-'
-                                                }}
+                                                    }}
 
                         </p>
 
@@ -634,7 +634,7 @@
 
         {{--PARTS USED --}}
 
-        <div class="rounded-xl bg-white p-6 shadow-sm">
+        <!-- <div class="rounded-xl bg-white p-6 shadow-sm">
 
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 
@@ -660,11 +660,11 @@
 
                 </div>
 
-            </div>
+            </div> -->
 
             {{-- Parts table --}}
 
-            <div class="mt-6 overflow-x-auto">
+            <!-- <div class="mt-6 overflow-x-auto">
 
                 <table class="min-w-full text-sm">
 
@@ -807,153 +807,153 @@
 
                 </table>
 
-            </div>
+            </div> -->
 
 
             {{-- ADD PART --}}
 
-            @if($canUpdate && !$isCompleted && !$isCancelled)
+            <!-- @if($canUpdate && !$isCompleted && !$isCancelled)
 
-                <div class="mt-6 border-t border-gray-200 pt-6">
+                    <div class="mt-6 border-t border-gray-200 pt-6">
 
-                    <h3 class="font-medium text-gray-900">
-                        Add Part
-                    </h3>
+                        <h3 class="font-medium text-gray-900">
+                            Add Part
+                        </h3>
 
-                    <p class="mt-1 text-sm text-gray-500">
-                        Add a part used during this maintenance.
-                    </p>
-
-
-                    <form method="POST" action="{{ route('maintenance.parts.store', $maintenance) }}" x-data="{
-                                                                    unitCost: '',
-
-                                                                    parts: {
-                                                                        @foreach($parts as $part)
-                                                                            {{ $part->id }}:
-                                                                                {{ (float) $part->default_unit_cost }},
-                                                                        @endforeach
-                                                                    },
-
-                                                                    updateCost() {
-                                                                        const partId = this.$refs.part.value;
-
-                                                                        this.unitCost =
-                                                                            this.parts[partId] ?? '';
-                                                                    }
-                                                                }"
-                        class="mt-5 grid grid-cols-1 gap-4 rounded-xl bg-gray-50 p-4 md:grid-cols-4">
-
-                        @csrf
+                        <p class="mt-1 text-sm text-gray-500">
+                            Add a part used during this maintenance.
+                        </p>
 
 
-                        {{-- Part --}}
+                        <form method="POST" action="{{ route('maintenance.parts.store', $maintenance) }}" x-data="{
+                                                                        unitCost: '',
 
-                        <div>
+                                                                        parts: {
+                                                                            @foreach($parts as $part)
+                                                                                {{ $part->id }}:
+                                                                                    {{ (float) $part->default_unit_cost }},
+                                                                            @endforeach
+                                                                        },
 
-                            <label for="part_id" class="block text-sm font-medium text-gray-700">
-                                Part
-                            </label>
+                                                                        updateCost() {
+                                                                            const partId = this.$refs.part.value;
 
-                            <select id="part_id" name="part_id" x-ref="part" @change="updateCost()"
-                                class="mt-1 block w-full rounded-lg border-gray-300" required>
+                                                                            this.unitCost =
+                                                                                this.parts[partId] ?? '';
+                                                                        }
+                                                                    }"
+                            class="mt-5 grid grid-cols-1 gap-4 rounded-xl bg-gray-50 p-4 md:grid-cols-4">
 
-                                <option value="">
-                                    Select part
-                                </option>
+                            @csrf -->
 
-                                @foreach($parts as $part)
 
-                                    <option value="{{ $part->id }}">
+            {{-- Part --}}
 
-                                        {{ $part->part_code }}
-                                        —
-                                        {{ $part->name }}
+            <!-- <div>
 
+                                <label for="part_id" class="block text-sm font-medium text-gray-700">
+                                    Part
+                                </label>
+
+                                <select id="part_id" name="part_id" x-ref="part" @change="updateCost()"
+                                    class="mt-1 block w-full rounded-lg border-gray-300" required>
+
+                                    <option value="">
+                                        Select part
                                     </option>
 
-                                @endforeach
+                                    @foreach($parts as $part)
 
-                            </select>
+                                        <option value="{{ $part->id }}">
 
-                            @error('part_id')
+                                            {{ $part->part_code }}
+                                            —
+                                            {{ $part->name }}
 
-                                <p class="mt-1 text-sm text-red-600">
-                                    {{ $message }}
-                                </p>
+                                        </option>
 
-                            @enderror
+                                    @endforeach
 
-                        </div>
+                                </select>
 
+                                @error('part_id')
 
-                        {{-- Quantity --}}
+                                    <p class="mt-1 text-sm text-red-600">
+                                        {{ $message }}
+                                    </p>
 
-                        <div>
+                                @enderror
 
-                            <label for="quantity" class="block text-sm font-medium text-gray-700">
-                                Quantity
-                            </label>
-
-                            <input type="number" name="quantity" id="quantity" min="1" step="1" value="{{ old('quantity', 1) }}"
-                                class="mt-1 block w-full rounded-lg border-gray-300" required>
-
-                            @error('quantity')
-
-                                <p class="mt-1 text-sm text-red-600">
-                                    {{ $message }}
-                                </p>
-
-                            @enderror
-
-                        </div>
+                            </div> -->
 
 
-                        {{-- Unit Cost --}}
+            {{-- Quantity --}}
 
-                        <div>
+            <!-- <div>
 
-                            <label for="unit_cost" class="block text-sm font-medium text-gray-700">
-                                Unit Cost
-                            </label>
+                                <label for="quantity" class="block text-sm font-medium text-gray-700">
+                                    Quantity
+                                </label>
 
-                            <input type="number" name="unit_cost" id="unit_cost" x-model="unitCost" min="0" step="0.01"
-                                class="mt-1 block w-full rounded-lg border-gray-300" required>
+                                <input type="number" name="quantity" id="quantity" min="1" step="1" value="{{ old('quantity', 1) }}"
+                                    class="mt-1 block w-full rounded-lg border-gray-300" required>
 
-                            @error('unit_cost')
+                                @error('quantity')
 
-                                <p class="mt-1 text-sm text-red-600">
-                                    {{ $message }}
-                                </p>
+                                    <p class="mt-1 text-sm text-red-600">
+                                        {{ $message }}
+                                    </p>
 
-                            @enderror
+                                @enderror
 
-                        </div>
+                            </div> -->
 
 
-                        {{-- Submit --}}
+            {{-- Unit Cost --}}
 
-                        <div class="flex items-end">
+            <!-- <div>
 
-                            <button type="submit"
-                                class="w-full rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800">
-                                Add Part
-                            </button>
+                                <label for="unit_cost" class="block text-sm font-medium text-gray-700">
+                                    Unit Cost
+                                </label>
 
-                        </div>
+                                <input type="number" name="unit_cost" id="unit_cost" x-model="unitCost" min="0" step="0.01"
+                                    class="mt-1 block w-full rounded-lg border-gray-300" required>
 
-                    </form>
+                                @error('unit_cost')
 
-                </div>
+                                    <p class="mt-1 text-sm text-red-600">
+                                        {{ $message }}
+                                    </p>
 
-            @endif
+                                @enderror
 
-        </div>
+                            </div> -->
+
+
+            {{-- Submit --}}
+
+            <!-- <div class="flex items-end">
+
+                                <button type="submit"
+                                    class="w-full rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800">
+                                    Add Part
+                                </button>
+
+                            </div> -->
+
+            <!-- </form>
+
+                    </div>
+
+                @endif -->
+
+        <!-- </div> -->
 
 
         {{--ATTACHMENTS --}}
 
-        <div class="rounded-xl bg-white p-6 shadow-sm">
+        <!-- <div class="rounded-xl bg-white p-6 shadow-sm">
 
             <div>
 
@@ -1123,7 +1123,7 @@
                                                 {{ str($attachment->attachment_type ?? 'other')
                         ->replace('_', ' ')
                         ->title()
-                                                                                                                        }}
+                                                                                                                                        }}
                                             </span>
 
                                             <span>
@@ -1184,7 +1184,7 @@
 
             </div>
 
-        </div>
+        </div> -->
 
 
         {{--ACTIVITY HISTORY --}}
@@ -1204,128 +1204,128 @@
 
                 @forelse($maintenance->audits as $audit)
 
-                            <div class="flex gap-4">
+                        <div class="flex gap-4">
 
-                                {{-- Icon / timeline --}}
+                            {{-- Icon / timeline --}}
 
-                                <div class="flex flex-col items-center">
+                            <div class="flex flex-col items-center">
 
-                                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg
-                                        @if($audit->action === 'created')
-                                            bg-green-50 text-green-700
-                                        @elseif($audit->action === 'status_changed')
-                                            bg-blue-50 text-blue-700
-                                        @else
-                                            bg-gray-100 text-gray-600
-                                        @endif">
+                                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg
+                                                    @if($audit->action === 'created')
+                                                        bg-green-50 text-green-700
+                                                    @elseif($audit->action === 'status_changed')
+                                                        bg-blue-50 text-blue-700
+                                                    @else
+                                                        bg-gray-100 text-gray-600
+                                                    @endif">
 
-                                        @if($audit->action === 'created')
+                                    @if($audit->action === 'created')
 
-                                            {{-- Created: Plus icon --}}
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                                                stroke="currentColor" stroke-width="1.8">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14m-7-7h14" />
-                                            </svg>
+                                        {{-- Created: Plus icon --}}
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                            stroke="currentColor" stroke-width="1.8">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14m-7-7h14" />
+                                        </svg>
 
-                                        @elseif($audit->action === 'status_changed')
+                                    @elseif($audit->action === 'status_changed')
 
-                                            {{-- Status changed: Refresh icon --}}
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                                                stroke="currentColor" stroke-width="1.8">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5" />
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="M5.64 15A7 7 0 0018.36 18M18.36 9A7 7 0 005.64 6" />
-                                            </svg>
+                                        {{-- Status changed: Refresh icon --}}
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                            stroke="currentColor" stroke-width="1.8">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5" />
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M5.64 15A7 7 0 0018.36 18M18.36 9A7 7 0 005.64 6" />
+                                        </svg>
 
-                                        @else
+                                    @else
 
-                                            {{-- Updated: Pencil icon --}}
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                                                stroke="currentColor" stroke-width="1.8">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="M16.862 4.487l2.651 2.651M4 20l4.5-1 11.2-11.2a1.875 1.875 0 00-2.65-2.65L5.85 16.35 4 20z" />
-                                            </svg>
+                                        {{-- Updated: Pencil icon --}}
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                            stroke="currentColor" stroke-width="1.8">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M16.862 4.487l2.651 2.651M4 20l4.5-1 11.2-11.2a1.875 1.875 0 00-2.65-2.65L5.85 16.35 4 20z" />
+                                        </svg>
 
-                                        @endif
-
-                                    </div>
-
-
-                                    @unless($loop->last)
-
-                                        <div class="mt-2 h-full w-px bg-gray-200"></div>
-
-                                    @endunless
+                                    @endif
 
                                 </div>
 
 
-                                {{-- Audit information --}}
+                                @unless($loop->last)
 
-                                <div class="pb-5">
+                                    <div class="mt-2 h-full w-px bg-gray-200"></div>
 
-                                    <p class="font-medium text-gray-900">
-
-                                        {{ str($audit->action)
-                        ->replace('_', ' ')
-                        ->title()
-                                                                                                }}
-
-                                    </p>
-
-
-                                    {{-- Status transition --}}
-
-                                    @if($audit->old_status && $audit->new_status)
-
-                                                <p class="mt-1 text-sm text-gray-600">
-
-                                                    {{ str($audit->old_status)
-                                        ->replace('_', ' ')
-                                        ->title()
-                                                                                                                                                                }}
-
-                                                    →
-
-                                                    {{ str($audit->new_status)
-                                        ->replace('_', ' ')
-                                        ->title()
-                                                                                                                                                                }}
-
-                                                </p>
-
-                                    @endif
-
-
-                                    {{-- Description --}}
-
-                                    @if($audit->description)
-
-                                        <p class="mt-1 text-sm text-gray-500">
-                                            {{ $audit->description }}
-                                        </p>
-
-                                    @endif
-
-
-                                    {{-- User and time --}}
-
-                                    <p class="mt-2 text-xs text-gray-400">
-
-                                        {{ $audit->user?->name ?? 'System' }}
-
-                                        ·
-
-                                        {{ $audit->created_at
-                        ? $audit->created_at->format('d M Y, H:i')
-                        : '-'
-                                                                                                }}
-
-                                    </p>
-
-                                </div>
+                                @endunless
 
                             </div>
+
+
+                            {{-- Audit information --}}
+
+                            <div class="pb-5">
+
+                                <p class="font-medium text-gray-900">
+
+                                    {{ str($audit->action)
+                    ->replace('_', ' ')
+                    ->title()
+                                                                                                            }}
+
+                                </p>
+
+
+                                {{-- Status transition --}}
+
+                                @if($audit->old_status && $audit->new_status)
+
+                                            <p class="mt-1 text-sm text-gray-600">
+
+                                                {{ str($audit->old_status)
+                                    ->replace('_', ' ')
+                                    ->title()
+                                                                                                                                                                                        }}
+
+                                                →
+
+                                                {{ str($audit->new_status)
+                                    ->replace('_', ' ')
+                                    ->title()
+                                                                                                                                                                                        }}
+
+                                            </p>
+
+                                @endif
+
+
+                                {{-- Description --}}
+
+                                @if($audit->description)
+
+                                    <p class="mt-1 text-sm text-gray-500">
+                                        {{ $audit->description }}
+                                    </p>
+
+                                @endif
+
+
+                                {{-- User and time --}}
+
+                                <p class="mt-2 text-xs text-gray-400">
+
+                                    {{ $audit->user?->name ?? 'System' }}
+
+                                    ·
+
+                                    {{ $audit->created_at
+                    ? $audit->created_at->format('d M Y, H:i')
+                    : '-'
+                                                                                                            }}
+
+                                </p>
+
+                            </div>
+
+                        </div>
 
                 @empty
 

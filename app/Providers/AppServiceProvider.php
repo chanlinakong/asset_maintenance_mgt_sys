@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use App\Services\OutstandingMaintenanceAlerts;
+use Illuminate\Support\Facades\View;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +21,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        View::composer('components.navbar', function ($view) {
+            $alerts = auth()->check()
+                ? app(OutstandingMaintenanceAlerts::class)->get()
+                : collect();
+
+            $view->with('outstandingMaintenanceAlerts', $alerts);
+        });
     }
 }
