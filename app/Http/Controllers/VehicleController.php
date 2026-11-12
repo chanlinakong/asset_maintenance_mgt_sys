@@ -76,6 +76,10 @@ class VehicleController extends Controller
             'maintenanceRecords' => function ($query) {
                 $query->latest('reported_at');
             },
+            'assetDefects' => function ($query) {
+                $query->with('defectType')
+                    ->latest('reported_at');
+            },
         ]);
 
         return view('vehicles.show', compact('vehicle'));

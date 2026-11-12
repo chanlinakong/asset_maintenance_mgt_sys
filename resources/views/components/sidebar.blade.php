@@ -56,6 +56,26 @@
             </a>
 
             {{-- Admin + Staff --}}
+            <a href="{{ route('defect-types.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2.5
+    text-sm font-medium transition
+    {{ request()->routeIs('defect-types.*')
+    ? 'bg-blue-50 text-blue-700'
+    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
+
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="1.8">
+
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
+
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M9 5a2 2 0 012-2h2a2 2 0 012 2v2H9V5zM9 12h6m-6 4h6" />
+                </svg>
+
+                <span>Defect Types</span>
+            </a>
+
+            {{-- Admin + Staff --}}
             <a href="{{ route('maintenance.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2.5
         text-sm font-medium transition
         {{ request()->routeIs('maintenance.*')
@@ -100,8 +120,8 @@
             {{-- Admin only --}}
             @if (auth()->user()->role->value === 'admin')
                     <a href="{{ route('settings.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2.5
-                                                                                                               text-sm font-medium transition
-                                                                                                               {{ request()->routeIs('settings.*')
+                                                                                                                       text-sm font-medium transition
+                                                                                                                       {{ request()->routeIs('settings.*')
                 ? 'bg-blue-50 text-blue-700'
                 : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
 

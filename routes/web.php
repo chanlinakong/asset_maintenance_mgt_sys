@@ -11,6 +11,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\MaintenancePartController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\Settings\UserManagementController;
+use App\Http\Controllers\DefectTypeController;
 Route::get('/', function () {
     return redirect()->route('dashboard');
 });
@@ -41,6 +42,14 @@ Route::middleware(['auth', 'role:admin,staff'])->group(function () {
         'excel',
     ])->name('reports.excel');
 
+    // Defect Types
+    Route::resource('defect-types', DefectTypeController::class)
+        ->except(['destroy']);
+
+    Route::patch(
+        '/defect-types/{defectType}/toggle-active',
+        [DefectTypeController::class, 'toggleActive']
+    )->name('defect-types.toggle-active');
 });
 
 use App\Http\Controllers\ProfileController;
