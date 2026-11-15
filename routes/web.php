@@ -12,6 +12,10 @@ use App\Http\Controllers\MaintenancePartController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\Settings\UserManagementController;
 use App\Http\Controllers\DefectTypeController;
+use App\Http\Controllers\MaintenanceRepairWorkController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PartController;
+
 Route::get('/', function () {
     return redirect()->route('dashboard');
 });
@@ -50,9 +54,67 @@ Route::middleware(['auth', 'role:admin,staff'])->group(function () {
         '/defect-types/{defectType}/toggle-active',
         [DefectTypeController::class, 'toggleActive']
     )->name('defect-types.toggle-active');
-});
 
-use App\Http\Controllers\ProfileController;
+    Route::get(
+        '/vehicles/{vehicle}/available-defects',
+        [MaintenanceRecordController::class, 'availableDefects']
+    )->name('vehicles.available-defects');
+
+    Route::post(
+        '/maintenance/{maintenance}/visits',
+        [MaintenanceRecordController::class, 'storeVisit']
+    )->name('maintenance.visits.store');
+
+    Route::patch(
+        '/maintenance/{maintenance}/visits/{visit}/complete',
+        [MaintenanceRecordController::class, 'completeVisit']
+    )->name('maintenance.visits.complete');
+    Route::patch(
+        '/maintenance/{maintenance}/visits/{visit}/defects/{recordDefect}/outcome',
+        [MaintenanceRecordController::class, 'updateDefectOutcome']
+    )->name('maintenance.visits.defects.outcome');
+    Route::post(
+        '/maintenance/{maintenance}/visits/{visit}/defects/{recordDefect}/repair-works',
+        [MaintenanceRepairWorkController::class, 'store']
+    )->name('maintenance.repair-works.store');
+
+    Route::put(
+        '/maintenance/{maintenance}/visits/{visit}/defects/{recordDefect}/repair-works/{repairWork}',
+        [MaintenanceRepairWorkController::class, 'update']
+    )->name('maintenance.repair-works.update');
+
+    Route::delete(
+        '/maintenance/{maintenance}/visits/{visit}/defects/{recordDefect}/repair-works/{repairWork}',
+        [MaintenanceRepairWorkController::class, 'destroy']
+    )->name('maintenance.repair-works.destroy');
+
+    Route::post(
+        '/maintenance/{maintenance}/visits/{visit}/defects/{recordDefect}/repair-works/{repairWork}/parts',
+        [MaintenancePartController::class, 'store']
+    )->name('maintenance.parts.store');
+
+    Route::put(
+        '/maintenance/{maintenance}/visits/{visit}/defects/{recordDefect}/repair-works/{repairWork}/parts/{maintenancePart}',
+        [MaintenancePartController::class, 'update']
+    )->name('maintenance.parts.update');
+
+    Route::delete(
+        '/maintenance/{maintenance}/visits/{visit}/defects/{recordDefect}/repair-works/{repairWork}/parts/{maintenancePart}',
+        [MaintenancePartController::class, 'destroy']
+    )->name('maintenance.parts.destroy');
+
+    // Maintenance Visit Attachments
+
+    Route::post(
+        '/maintenance/{maintenance}/visits/{visit}/attachments',
+        [MaintenanceAttachmentController::class, 'store']
+    )->name('maintenance.visits.attachments.store');
+
+    Route::delete(
+        '/maintenance/{maintenance}/visits/{visit}/attachments/{attachment}',
+        [MaintenanceAttachmentController::class, 'destroy']
+    )->name('maintenance.visits.attachments.destroy');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])
@@ -164,33 +226,30 @@ Route::middleware(['auth', 'role:admin,staff'])->group(function () {
 
     Route::delete(
         '/maintenance/{maintenance}/attachments/{attachment}',
-        [
-            MaintenanceAttachmentController::class,
-            'destroy',
-        ]
+        [MaintenanceAttachmentController::class, 'destroyGeneral']
     )->name('maintenance.attachments.destroy');
 
     // Maintenance-Part
 
+    // Legacy: parts directly under maintenance report
     Route::post(
         '/maintenance/{maintenance}/parts',
-        [
-            MaintenancePartController::class,
-            'store',
-        ]
-    )->name(
-            'maintenance.parts.store'
-        );
+        [MaintenancePartController::class, 'store']
+    )->name('maintenance.legacy-parts.store');
 
     Route::delete(
         '/maintenance/{maintenance}/parts/{maintenancePart}',
-        [
-            MaintenancePartController::class,
-            'destroy',
-        ]
-    )->name(
-            'maintenance.parts.destroy'
-        );
+        [MaintenancePartController::class, 'destroy']
+    )->name('maintenance.legacy-parts.destroy');
+
+    // Parts Catalog — Admin only
+    Route::resource('parts', PartController::class)
+        ->except(['show', 'destroy']);
+
+    Route::patch(
+        '/parts/{part}/toggle-active',
+        [PartController::class, 'toggleActive']
+    )->name('parts.toggle-active');
 
 });
 

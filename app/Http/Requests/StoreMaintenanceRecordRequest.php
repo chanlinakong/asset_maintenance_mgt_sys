@@ -41,9 +41,9 @@ class StoreMaintenanceRecordRequest extends FormRequest
                 Rule::enum(MaintenanceType::class),
             ],
 
-            'status' => [
-                MaintenanceStatus::Pending->value,
-            ],
+            // 'status' => [
+            //     MaintenanceStatus::Pending->value,
+            // ],
 
             'reported_at' => [
                 'required',
@@ -93,14 +93,90 @@ class StoreMaintenanceRecordRequest extends FormRequest
                         )->where('is_active', true);
                     }),
             ],
-            
+            'defect_ids' => [
+                'nullable',
+                'array',
+            ],
+
+            'defect_ids.*' => [
+                'required',
+                'integer',
+                'distinct',
+                'exists:asset_defects,id',
+            ],
+
+            'new_defects' => [
+                'nullable',
+                'array',
+                'max:20',
+            ],
+
+            'new_defects.*.defect_type_id' => [
+                'required',
+                'integer',
+                Rule::exists('defect_types', 'id')
+                    ->where('is_active', true),
+            ],
+
+            'new_defects.*.title' => [
+                'required',
+                'string',
+                'max:200',
+            ],
+
+            'new_defects.*.description' => [
+                'nullable',
+                'string',
+            ],
+
         ];
     }
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator) {
 
+            // Validate that selected defects belong to this vehicle
+// and are not already being handled by another active report.
+
             $vehicleId = $this->input('vehicle_id');
+
+            $defectIds = $this->input('defect_ids', []);
+
+            if (is_array($defectIds) && count($defectIds) > 0) {
+
+                $validDefectIds = \App\Models\AssetDefect::query()
+                    ->whereIn('id', $defectIds)
+                    ->where('vehicle_id', $vehicleId)
+                    ->whereIn('status', ['open', 'in_progress'])
+                    ->whereDoesntHave(
+                        'maintenanceRecordDefects',
+                        function ($query) {
+                            $query->whereHas(
+                                'maintenanceRecord',
+                                function ($maintenanceQuery) {
+                                    $maintenanceQuery->whereIn('status', [
+                                        MaintenanceStatus::Pending->value,
+                                        MaintenanceStatus::InProgress->value,
+                                    ]);
+                                }
+                            );
+                        }
+                    )
+                    ->pluck('id')
+                    ->map(fn($id) => (int) $id)
+                    ->all();
+
+                $submittedIds = array_map('intval', $defectIds);
+
+                $invalidIds = array_diff($submittedIds, $validDefectIds);
+
+                if (!empty($invalidIds)) {
+                    $validator->errors()->add(
+                        'defect_ids',
+                        'One or more selected defects do not belong to this vehicle, are already resolved, or are being handled by another active maintenance report.'
+                    );
+                }
+            }
 
             $vehicle = \App\Models\Vehicle::find(
                 $this->input('vehicle_id')

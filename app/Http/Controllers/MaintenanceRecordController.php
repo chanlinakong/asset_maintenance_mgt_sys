@@ -15,6 +15,13 @@ use App\Services\MaintenanceService;
 use Illuminate\Support\Facades\Gate;
 use App\Models\Part;
 use App\Enums\VehicleStatus;
+use App\Models\AssetDefect;
+use App\Models\DefectType;
+use App\Models\MaintenanceVisit;
+use Illuminate\Support\Facades\DB;
+use App\Models\MaintenanceRecordDefect;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class MaintenanceRecordController extends Controller
 {
@@ -214,6 +221,11 @@ class MaintenanceRecordController extends Controller
             'types' => MaintenanceType::cases(),
 
             'statuses' => MaintenanceStatus::cases(),
+
+            'defectTypes' => DefectType::query()
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get(['id', 'name']),
         ]);
     }
 
@@ -235,6 +247,108 @@ class MaintenanceRecordController extends Controller
             );
     }
 
+    public function storeVisit(Request $request, MaintenanceRecord $maintenance)
+    {
+        Gate::authorize('update', $maintenance);
+
+        $validated = $request->validate([
+            'remarks' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        if ($maintenance->status !== MaintenanceStatus::InProgress) {
+            return back()->with(
+                'error',
+                'Visits can only be added to maintenance records that are In Progress.'
+            );
+        }
+
+        DB::transaction(function () use ($maintenance, $validated) {
+
+            // 1. Lock the parent maintenance report.
+            $lockedMaintenance = MaintenanceRecord::query()
+                ->lockForUpdate()
+                ->findOrFail($maintenance->id);
+
+            // 2. Prevent creating another visit while one is active.
+            $activeVisitExists = $lockedMaintenance->visits()
+                ->where('status', 'in_progress')
+                ->exists();
+
+            if ($activeVisitExists) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'visit' => 'Please complete the current visit before creating another visit.',
+                ]);
+            }
+
+            // 3. Calculate the next visit number.
+            $nextVisitNumber = (int) $lockedMaintenance->visits()
+                ->max('visit_number') + 1;
+
+            // 4. Create the visit and store the created model in $visit.
+            $visit = $lockedMaintenance->visits()->create([
+                'visit_number' => $nextVisitNumber,
+                'status' => 'in_progress',
+                'technician_id' => auth()->id(),
+                'started_at' => now(),
+                'remarks' => $validated['remarks'] ?? null,
+            ]);
+
+            // 5. Find all unresolved defect occurrences in this maintenance report.
+            $unresolvedDefects = MaintenanceRecordDefect::query()
+                ->where('maintenance_record_id', $lockedMaintenance->id)
+                ->where(function ($query) {
+                    $query->whereNull('repair_outcome')
+                        ->orWhere('repair_outcome', '!=', 'resolved');
+                })
+                ->get();
+
+            // 6. Assign those defects to the newly created visit.
+            $visit->recordDefects()->sync(
+                $unresolvedDefects->modelKeys()
+            );
+        });
+
+        return redirect()
+            ->route('maintenance.show', $maintenance)
+            ->with('success', 'Maintenance visit created successfully.');
+    }
+
+    public function completeVisit(
+        MaintenanceRecord $maintenance,
+        MaintenanceVisit $visit
+    ) {
+        Gate::authorize('update', $maintenance);
+
+        // Ensure this visit belongs to the selected maintenance report.
+        abort_unless(
+            $visit->maintenance_record_id === $maintenance->id,
+            404
+        );
+
+        if ($maintenance->status !== MaintenanceStatus::InProgress) {
+            return back()->with(
+                'error',
+                'Visits cannot be completed because this maintenance record is not In Progress.'
+            );
+        }
+
+        if ($visit->status !== 'in_progress') {
+            return back()->with(
+                'error',
+                'This visit is already completed or is no longer active.'
+            );
+        }
+
+        $visit->update([
+            'status' => 'completed',
+            'completed_at' => now(),
+        ]);
+
+        return redirect()
+            ->route('maintenance.show', $maintenance)
+            ->with('success', 'Maintenance visit completed successfully.');
+    }
+
     public function show(
         MaintenanceRecord $maintenance
     ): View {
@@ -243,6 +357,20 @@ class MaintenanceRecordController extends Controller
             'audits.user',
             'attachments.uploader',
             'maintenanceParts.part',
+
+            'recordDefects.assetDefect.defectType',
+            'recordDefects.repairWorks.maintenanceParts.part',
+
+            'visits.technician',
+            'visits.repairWorks.maintenanceRecordDefect.assetDefect',
+            'visits.repairWorks.maintenanceParts.part',
+
+            'visits.recordDefects.assetDefect.defectType',
+            'visits.recordDefects.repairWorks.maintenanceParts.part',
+        ]);
+
+        $maintenance->loadMissing([
+            'visits.attachments.uploader',
         ]);
 
         $parts = Part::query()
@@ -250,9 +378,13 @@ class MaintenanceRecordController extends Controller
             ->orderBy('name')
             ->get();
 
+        $hasActiveVisit = $maintenance->visits()
+            ->whereNull('completed_at')
+            ->exists();
+
         return view(
             'maintenance.show',
-            compact('maintenance', 'parts')
+            compact('maintenance', 'parts', 'hasActiveVisit')
         );
     }
 
@@ -300,4 +432,152 @@ class MaintenanceRecordController extends Controller
                 'Maintenance record deleted successfully.'
             );
     }
+
+    public function availableDefects(Vehicle $vehicle)
+    {
+        $defects = AssetDefect::query()
+            ->where('vehicle_id', $vehicle->id)
+            ->whereIn('status', ['open', 'in_progress'])
+            ->whereDoesntHave(
+                'maintenanceRecordDefects',
+                function ($query) {
+                    $query->whereHas(
+                        'maintenanceRecord',
+                        function ($maintenanceQuery) {
+                            $maintenanceQuery->whereIn('status', [
+                                MaintenanceStatus::Pending->value,
+                                MaintenanceStatus::InProgress->value,
+                            ]);
+                        }
+                    );
+                }
+            )
+            ->with('defectType:id,name')
+            ->orderByDesc('reported_at')
+            ->get([
+                'id',
+                'defect_type_id',
+                'title',
+                'description',
+                'status',
+                'reported_at',
+            ]);
+
+        return response()->json(
+            $defects->map(fn($defect) => [
+                'id' => $defect->id,
+                'title' => $defect->title,
+                'description' => $defect->description,
+                'status' => $defect->status,
+                'reported_at' => $defect->reported_at?->format('d M Y'),
+                'defect_type' => $defect->defectType?->name,
+            ])
+        );
+    }
+
+    //update the repair outcome of a defect occurrence and synchronize the status of the registered asset defect.
+    public function updateDefectOutcome(
+        Request $request,
+        MaintenanceRecord $maintenance,
+        MaintenanceVisit $visit,
+        MaintenanceRecordDefect $recordDefect
+    ) {
+        Gate::authorize('update', $maintenance);
+
+        $validated = $request->validate([
+            'repair_outcome' => [
+                'required',
+                Rule::in(['in_progress', 'resolved', 'unable_to_repair']),
+            ],
+            'outcome_remarks' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        DB::transaction(function () use ($maintenance, $visit, $recordDefect, $validated) {
+            // 1. Lock the maintenance report.
+            $lockedMaintenance = MaintenanceRecord::query()
+                ->lockForUpdate()
+                ->findOrFail($maintenance->id);
+
+            // 2. Confirm this visit belongs to this maintenance report.
+            $lockedVisit = MaintenanceVisit::query()
+                ->where('maintenance_record_id', $lockedMaintenance->id)
+                ->lockForUpdate()
+                ->findOrFail($visit->id);
+
+            // 3. Confirm the defect occurrence belongs to this report.
+            $lockedDefect = MaintenanceRecordDefect::query()
+                ->where('maintenance_record_id', $lockedMaintenance->id)
+                ->lockForUpdate()
+                ->findOrFail($recordDefect->id);
+
+            // 4. Only allow updating defects assigned to this visit.
+            $isAssignedToVisit = $lockedVisit->recordDefects()
+                ->whereKey($lockedDefect->id)
+                ->exists();
+
+            if (!$isAssignedToVisit) {
+                throw ValidationException::withMessages([
+                    'repair_outcome' => 'This defect is not assigned to the selected visit.',
+                ]);
+            }
+
+            // 5. Only allow outcome changes during an active visit.
+            if (
+                $lockedMaintenance->status !== MaintenanceStatus::InProgress ||
+                $lockedVisit->status !== 'in_progress'
+            ) {
+                throw ValidationException::withMessages([
+                    'repair_outcome' => 'Defect outcomes can only be updated during an active maintenance visit.',
+                ]);
+            }
+
+            // 6. Update the occurrence outcome.
+            $lockedDefect->update([
+                'repair_outcome' => $validated['repair_outcome'],
+                'outcome_remarks' => $validated['outcome_remarks'] ?? null,
+                'outcome_recorded_at' => now(),
+            ]);
+
+            // 7. Lock the reusable registered vehicle defect.
+            $assetDefect = AssetDefect::query()
+                ->lockForUpdate()
+                ->findOrFail($lockedDefect->asset_defect_id);
+
+            // 8. Check whether ANY occurrence of this asset defect
+            // is still unresolved in any maintenance report.
+            $unresolvedOccurrences = $assetDefect
+                ->maintenanceRecordDefects()
+                ->where(function ($query) {
+                    $query->whereNull('repair_outcome')
+                        ->orWhere('repair_outcome', '!=', 'resolved');
+                });
+
+            $hasUnresolvedOccurrences = (clone $unresolvedOccurrences)->exists();
+
+            $hasInProgressOccurrences = (clone $unresolvedOccurrences)
+                ->where('repair_outcome', 'in_progress')
+                ->exists();
+
+            // 9. Synchronize the registered asset defect status.
+            if (!$hasUnresolvedOccurrences) {
+                $assetDefect->update([
+                    'status' => 'resolved',
+                    'resolved_at' => now(),
+                ]);
+            } else {
+                $assetDefect->update([
+                    'status' => $hasInProgressOccurrences
+                        ? 'in_progress'
+                        : 'open',
+                    'resolved_at' => null,
+                ]);
+            }
+        });
+
+        return redirect()
+            ->route('maintenance.show', $maintenance)
+            ->with('success', 'Defect outcome and registered asset defect status updated successfully.');
+    }
+
+
 }

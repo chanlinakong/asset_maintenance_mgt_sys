@@ -56,6 +56,26 @@
             </a>
 
             {{-- Admin + Staff --}}
+            <a href="{{ route('parts.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2.5
+    text-sm font-medium transition
+    {{ request()->routeIs('parts.*')
+    ? 'bg-blue-50 text-blue-700'
+    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
+
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="1.8">
+
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20.5 7.5 12 12m0 0L3.5 7.5M12 12v9" />
+
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="m3.5 7.5 8.5-5 8.5 5v9L12 21l-8.5-4.5v-9Z" />
+
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m7.5 5.2 8.5 5" />
+                </svg>
+
+                <span>Spare Parts</span>
+            </a>
+
             <a href="{{ route('defect-types.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2.5
     text-sm font-medium transition
     {{ request()->routeIs('defect-types.*')
@@ -120,8 +140,8 @@
             {{-- Admin only --}}
             @if (auth()->user()->role->value === 'admin')
                     <a href="{{ route('settings.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2.5
-                                                                                                                       text-sm font-medium transition
-                                                                                                                       {{ request()->routeIs('settings.*')
+                                                                                                                               text-sm font-medium transition
+                                                                                                                               {{ request()->routeIs('settings.*')
                 ? 'bg-blue-50 text-blue-700'
                 : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
 

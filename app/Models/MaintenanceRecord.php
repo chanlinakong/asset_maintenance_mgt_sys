@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\MaintenanceVisit;
 
 class MaintenanceRecord extends Model
 {
@@ -68,7 +69,8 @@ class MaintenanceRecord extends Model
     public function maintenanceParts(): HasMany
     {
         return $this->hasMany(
-            MaintenancePart::class
+            MaintenancePart::class,
+            'maintenance_record_id'
         );
     }
 
@@ -82,5 +84,11 @@ class MaintenanceRecord extends Model
     public function recordDefects(): HasMany
     {
         return $this->hasMany(MaintenanceRecordDefect::class);
+    }
+
+    public function visits(): HasMany
+    {
+        return $this->hasMany(MaintenanceVisit::class)
+            ->orderBy('visit_number');
     }
 }

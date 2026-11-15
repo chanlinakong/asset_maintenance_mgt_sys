@@ -14,6 +14,7 @@ class AssetDefect extends Model
     protected $fillable = [
         'vehicle_id',
         'defect_type_id',
+        'recurrence_of_defect_id',
         'title',
         'description',
         'status',
@@ -42,5 +43,21 @@ class AssetDefect extends Model
     public function maintenanceRecordDefects(): HasMany
     {
         return $this->hasMany(MaintenanceRecordDefect::class);
+    }
+
+    public function previousOccurrence(): BelongsTo
+    {
+        return $this->belongsTo(
+            AssetDefect::class,
+            'recurrence_of_defect_id'
+        );
+    }
+
+    public function recurrenceOccurrences(): HasMany
+    {
+        return $this->hasMany(
+            AssetDefect::class,
+            'recurrence_of_defect_id'
+        );
     }
 }

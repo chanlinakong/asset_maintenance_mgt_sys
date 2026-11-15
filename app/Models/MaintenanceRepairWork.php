@@ -13,6 +13,7 @@ class MaintenanceRepairWork extends Model
 
     protected $fillable = [
         'maintenance_record_defect_id',
+        'maintenance_visit_id',
         'work_description',
         'quantity',
         'unit',
@@ -31,9 +32,20 @@ class MaintenanceRepairWork extends Model
         return $this->belongsTo(MaintenanceRecordDefect::class);
     }
 
+    public function visit(): BelongsTo
+    {
+        return $this->belongsTo(
+            MaintenanceVisit::class,
+            'maintenance_visit_id'
+        );
+    }
+
     public function maintenanceParts(): HasMany
     {
-        return $this->hasMany(MaintenancePart::class);
+        return $this->hasMany(
+            MaintenancePart::class,
+            'maintenance_repair_work_id'
+        );
     }
 }
 

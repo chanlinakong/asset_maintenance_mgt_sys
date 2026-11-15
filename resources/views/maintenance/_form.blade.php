@@ -48,6 +48,67 @@
 
         status: @js($selectedStatus),
 
+        defects: [],
+        selectedDefectIds: [],
+        loadingDefects: false,
+
+        newDefects: [],
+
+        defectTypes: @js(
+            ($defectTypes ?? collect())->map(fn($type) => [
+                'id' => $type->id,
+                'name' => $type->name,
+            ])->values()
+        ),
+
+        async loadDefects() {
+            if (!this.vehicleId) {
+                this.defects = [];
+                this.selectedDefectIds = [];
+                return;
+            }
+
+            this.loadingDefects = true;
+
+            try {
+                const response = await fetch(
+                    `/vehicles/${this.vehicleId}/available-defects`,
+                    {
+                        headers: {
+                            'Accept': 'application/json',
+                        }
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error('Failed to load vehicle defects.');
+                }
+
+                this.defects = await response.json();
+
+            } catch (error) {
+                console.error(error);
+                this.defects = [];
+
+                alert('Unable to load defects for this vehicle.');
+
+            } finally {
+                this.loadingDefects = false;
+            }
+        },
+
+        addNewDefect() {
+            this.newDefects.push({
+                defect_type_id: '',
+                title: '',
+                description: '',
+            });
+        },
+
+        removeNewDefect(index) {
+            this.newDefects.splice(index, 1);
+        },
+
         selectedScheduleId: @js($selectedScheduleId),
 
         schedules: @js($schedules ?? []),
@@ -135,11 +196,17 @@
         */
 
         async vehicleChanged() {
-
             this.selectedScheduleId = '';
 
-            await this.loadSchedules();
+            // Defects from the previous vehicle must not remain selected.
+            this.defects = [];
+            this.selectedDefectIds = [];
+            this.newDefects = [];
 
+            await Promise.all([
+                this.loadSchedules(),
+                this.loadDefects(),
+            ]);
         },
 
 
@@ -164,6 +231,7 @@
     }" x-init="
         if (vehicleId) {
             loadSchedules();
+            loadDefects();
         }
     ">
 
@@ -230,6 +298,195 @@
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
             @enderror
         </div>
+
+        @unless($isEdit)
+            {{-- EXISTING VEHICLE DEFECTS --}}
+            <div class="md:col-span-2 rounded-xl border border-gray-200 bg-white p-5">
+
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                        <h3 class="text-base font-semibold text-gray-900">
+                            Existing Vehicle Defects
+                        </h3>
+
+                        <p class="mt-1 text-sm text-gray-500">
+                            Select the unresolved defects that this maintenance report will handle.
+                        </p>
+                    </div>
+
+                    <span class="rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700"
+                        x-text="selectedDefectIds.length + ' selected'"></span>
+                </div>
+
+                {{-- No vehicle --}}
+                <div x-show="!vehicleId" x-cloak class="mt-4 rounded-lg bg-gray-50 p-4 text-sm text-gray-500">
+                    Select a vehicle first to view its defects.
+                </div>
+
+                {{-- Loading --}}
+                <div x-show="vehicleId && loadingDefects" x-cloak class="mt-4 text-sm text-gray-500">
+                    Loading vehicle defects...
+                </div>
+
+                {{-- Defect list --}}
+                <div x-show="vehicleId && !loadingDefects && defects.length > 0" x-cloak class="mt-4 space-y-3">
+                    <template x-for="defect in defects" :key="defect.id">
+                        <label
+                            class="flex cursor-pointer items-start gap-3 rounded-lg border border-gray-200 p-4 transition hover:border-indigo-300 hover:bg-indigo-50/30">
+                            <input type="checkbox" name="defect_ids[]" :value="defect.id" x-model="selectedDefectIds"
+                                class="mt-1 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+
+                            <div class="min-w-0 flex-1">
+                                <div class="flex flex-wrap items-center justify-between gap-2">
+                                    <span class="font-medium text-gray-900" x-text="defect.title"></span>
+
+                                    <span class="rounded-full bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700"
+                                        x-text="defect.status.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())"></span>
+                                </div>
+
+                                <p class="mt-1 text-sm text-gray-500" x-text="defect.defect_type || 'Uncategorized'"></p>
+
+                                <p x-show="defect.description" class="mt-1 text-sm text-gray-600"
+                                    x-text="defect.description"></p>
+
+                                <p class="mt-2 text-xs text-gray-400"
+                                    x-text="'Reported: ' + (defect.reported_at || 'Unknown')"></p>
+                            </div>
+                        </label>
+                    </template>
+                </div>
+
+                {{-- No defects --}}
+                <div x-show="vehicleId && !loadingDefects && defects.length === 0" x-cloak
+                    class="mt-4 rounded-lg border border-dashed border-gray-300 p-5 text-center">
+                    <p class="text-sm font-medium text-gray-700">
+                        No available unresolved defects
+                    </p>
+
+                    <p class="mt-1 text-sm text-gray-500">
+                        You can register a new defect below.
+                    </p>
+                </div>
+
+                @error('defect_ids')
+                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+
+                @error('defect_ids.*')
+                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+
+            </div>
+
+            {{-- REGISTER NEW DEFECTS --}}
+            <div class="md:col-span-2 rounded-xl border border-gray-200 bg-gray-50 p-5">
+
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <h3 class="text-base font-semibold text-gray-900">
+                            Register Additional Defects
+                        </h3>
+
+                        <p class="mt-1 text-sm text-gray-500">
+                            Add defects discovered during inspection or maintenance reporting.
+                        </p>
+                    </div>
+
+                    <button type="button" @click="addNewDefect()" :disabled="!vehicleId"
+                        class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50">
+                        <span aria-hidden="true">+</span>
+                        Add Defect
+                    </button>
+                </div>
+
+                <div x-show="!vehicleId" x-cloak class="mt-4 text-sm text-gray-500">
+                    Select a vehicle before registering defects.
+                </div>
+
+                <div x-show="vehicleId && newDefects.length === 0" x-cloak
+                    class="mt-4 rounded-lg border border-dashed border-gray-300 bg-white p-4 text-center text-sm text-gray-500">
+                    No new defects added.
+                </div>
+
+                <div class="mt-4 space-y-4">
+
+                    <template x-for="(defect, index) in newDefects" :key="index">
+
+                        <div class="rounded-lg border border-gray-200 bg-white p-4">
+
+                            <div class="mb-4 flex items-center justify-between">
+                                <h4 class="font-medium text-gray-800" x-text="'New Defect ' + (index + 1)"></h4>
+
+                                <button type="button" @click="removeNewDefect(index)"
+                                    class="text-sm font-medium text-red-600 hover:text-red-800">
+                                    Remove
+                                </button>
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+
+                                {{-- DEFECT TYPE --}}
+                                <div>
+                                    <label :for="'new-defect-type-' + index"
+                                        class="block text-sm font-medium text-gray-700">
+                                        Defect Type
+                                    </label>
+
+                                    <select :id="'new-defect-type-' + index"
+                                        :name="'new_defects[' + index + '][defect_type_id]'" x-model="defect.defect_type_id"
+                                        required
+                                        class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:outline-none">
+                                        <option value="">Select defect type</option>
+
+                                        <template x-for="type in defectTypes" :key="type.id">
+                                            <option :value="type.id" x-text="type.name"></option>
+                                        </template>
+                                    </select>
+
+                                    @error('new_defects.*.defect_type_id')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                {{-- DEFECT TITLE --}}
+                                <div>
+                                    <label :for="'new-defect-title-' + index"
+                                        class="block text-sm font-medium text-gray-700">
+                                        Defect Title
+                                    </label>
+
+                                    <input type="text" :id="'new-defect-title-' + index"
+                                        :name="'new_defects[' + index + '][title]'" x-model="defect.title" maxlength="200"
+                                        required placeholder="e.g. Engine overheating"
+                                        class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:outline-none">
+
+                                    @error('new_defects.*.title')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                {{-- DESCRIPTION --}}
+                                <div class="md:col-span-2">
+                                    <label :for="'new-defect-description-' + index"
+                                        class="block text-sm font-medium text-gray-700">
+                                        Description
+                                    </label>
+
+                                    <textarea :id="'new-defect-description-' + index"
+                                        :name="'new_defects[' + index + '][description]'" x-model="defect.description"
+                                        rows="2" placeholder="Describe the defect..."
+                                        class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:outline-none"></textarea>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </template>
+
+                </div>
+            </div>
+        @endunless
 
         {{-- TITLE --}}
         <div>
@@ -409,8 +666,7 @@
     $maintenance?->completed_at
     ? $maintenance->completed_at->format('Y-m-d\TH:i')
     : ''
-) }}"
-                    class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none">
+) }}" class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none">
 
                 @error('completed_at')
                     <p class="mt-1 text-sm text-red-600">
@@ -496,16 +752,16 @@
 
             <!-- <div class="mt-4 rounded-lg border border-blue-100 bg-blue-50 p-4">
 
-                <p class="text-sm font-medium text-blue-900">
-                    Parts Cost
-                </p>
+                                        <p class="text-sm font-medium text-blue-900">
+                                            Parts Cost
+                                        </p>
 
-                <p class="mt-1 text-sm text-blue-700">
-                    Parts are not entered manually here. Add the actual parts
-                    used after saving the maintenance record.
-                </p>
+                                        <p class="mt-1 text-sm text-blue-700">
+                                            Parts are not entered manually here. Add the actual parts
+                                            used after saving the maintenance record.
+                                        </p>
 
-            </div> -->
+                                    </div> -->
 
         </div>
     @endif

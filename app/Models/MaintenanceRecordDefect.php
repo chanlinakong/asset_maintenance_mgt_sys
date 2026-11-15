@@ -15,7 +15,17 @@ class MaintenanceRecordDefect extends Model
         'maintenance_record_id',
         'asset_defect_id',
         'remarks',
+        'repair_outcome',
+        'outcome_remarks',
+        'outcome_recorded_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'outcome_recorded_at' => 'datetime',
+        ];
+    }
 
     public function maintenanceRecord(): BelongsTo
     {
@@ -30,5 +40,11 @@ class MaintenanceRecordDefect extends Model
     public function repairWorks(): HasMany
     {
         return $this->hasMany(MaintenanceRepairWork::class);
+    }
+
+    public function repairWorksForVisit(int $visitId): HasMany
+    {
+        return $this->repairWorks()
+            ->where('maintenance_visit_id', $visitId);
     }
 }
