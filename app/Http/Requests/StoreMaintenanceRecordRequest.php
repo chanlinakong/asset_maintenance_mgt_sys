@@ -147,7 +147,7 @@ class StoreMaintenanceRecordRequest extends FormRequest
                 $validDefectIds = \App\Models\AssetDefect::query()
                     ->whereIn('id', $defectIds)
                     ->where('vehicle_id', $vehicleId)
-                    ->whereIn('status', ['open', 'in_progress'])
+                    ->whereIn('status', ['open', 'in_progress', 'resolved'])
                     ->whereDoesntHave(
                         'maintenanceRecordDefects',
                         function ($query) {

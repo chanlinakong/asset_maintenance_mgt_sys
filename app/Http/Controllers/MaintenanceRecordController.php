@@ -379,7 +379,7 @@ class MaintenanceRecordController extends Controller
             ->get();
 
         $hasActiveVisit = $maintenance->visits()
-            ->whereNull('completed_at')
+            ->where('status', 'in_progress')
             ->exists();
 
         return view(
@@ -437,25 +437,38 @@ class MaintenanceRecordController extends Controller
     {
         $defects = AssetDefect::query()
             ->where('vehicle_id', $vehicle->id)
-            ->whereIn('status', ['open', 'in_progress'])
-            ->whereDoesntHave(
-                'maintenanceRecordDefects',
-                function ($query) {
-                    $query->whereHas(
-                        'maintenanceRecord',
-                        function ($maintenanceQuery) {
+
+            // Include all registered defects.
+            // Do not hide defects with unresolved occurrences.
+            ->with('defectType:id,name')
+
+            // Count every occurrence in maintenance records.
+            ->withCount([
+                'maintenanceRecordDefects as occurrences_count',
+            ])
+
+            // Count unresolved occurrences in active maintenance records.
+            ->withCount([
+                'maintenanceRecordDefects as unresolved_occurrences_count' => function ($query) {
+                    $query
+                        ->where(function ($query) {
+                            $query->whereNull('repair_outcome')
+                                ->orWhere('repair_outcome', '!=', 'resolved');
+                        })
+                        ->whereHas('maintenanceRecord', function ($maintenanceQuery) {
                             $maintenanceQuery->whereIn('status', [
                                 MaintenanceStatus::Pending->value,
                                 MaintenanceStatus::InProgress->value,
                             ]);
-                        }
-                    );
-                }
-            )
-            ->with('defectType:id,name')
-            ->orderByDesc('reported_at')
+                        });
+                },
+            ])
+
+            ->orderBy('defect_type_id')
+            ->orderBy('title')
             ->get([
                 'id',
+                'vehicle_id',
                 'defect_type_id',
                 'title',
                 'description',
@@ -470,7 +483,14 @@ class MaintenanceRecordController extends Controller
                 'description' => $defect->description,
                 'status' => $defect->status,
                 'reported_at' => $defect->reported_at?->format('d M Y'),
+
+                'defect_type_id' => $defect->defect_type_id,
                 'defect_type' => $defect->defectType?->name,
+
+                'occurrences_count' => (int) $defect->occurrences_count,
+                'unresolved_occurrences_count' => (int) $defect->unresolved_occurrences_count,
+
+                'has_unresolved_occurrence' => $defect->unresolved_occurrences_count > 0,
             ])
         );
     }
