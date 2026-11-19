@@ -57,6 +57,7 @@ class MaintenanceAttachmentController extends Controller
                 'required',
                 Rule::in([
                     'before',
+                    'during',
                     'after',
                     'invoice',
                     'report',

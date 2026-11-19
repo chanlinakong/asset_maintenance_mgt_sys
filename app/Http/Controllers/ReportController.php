@@ -172,6 +172,11 @@ class ReportController extends Controller
             })
             ->sortByDesc('cost');
 
+        $maintenanceRecordsList = MaintenanceRecord::query()
+        ->with('vehicle')
+        ->latest('reported_at')
+        ->get();
+
         // Paginate Maintenance Detail independently
         $maintenancePage = LengthAwarePaginator::resolveCurrentPage('maintenance_page');
 
@@ -197,6 +202,7 @@ class ReportController extends Controller
             'status' => $status,
             'type' => $type,
             'vehicleStatuses' => VehicleStatus::cases(),
+            'maintenanceRecordsList' => $maintenanceRecordsList,
         ]);
     }
     public function excel(

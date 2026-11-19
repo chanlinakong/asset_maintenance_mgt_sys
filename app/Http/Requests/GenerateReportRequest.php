@@ -26,11 +26,16 @@ class GenerateReportRequest extends FormRequest
                     'monthly_maintenance',
                     'maintenance_schedule',
                     'maintenance_cost',
+
+                    // New reports
+                    'maintenance_work_photos',
+                    'spare_parts_repair',
                 ]),
             ],
 
             'period' => [
-                'required',
+                'nullable',
+                'required_unless:report_type,maintenance_work_photos,spare_parts_repair',
                 Rule::in([
                     'all',
                     'today',
@@ -42,6 +47,14 @@ class GenerateReportRequest extends FormRequest
                     'last_year',
                     'custom',
                 ]),
+            ],
+
+            'maintenance_record_id' => [
+                'nullable',
+                'required_if:report_type,maintenance_work_photos',
+                'required_if:report_type,spare_parts_repair',
+                'integer',
+                'exists:maintenance_records,id',
             ],
 
             'from' => [
@@ -61,7 +74,7 @@ class GenerateReportRequest extends FormRequest
                 'nullable',
                 Rule::in(
                     collect(VehicleStatus::cases())
-                        ->map(fn ($case) => $case->value)
+                        ->map(fn($case) => $case->value)
                         ->all()
                 ),
             ],
@@ -70,7 +83,7 @@ class GenerateReportRequest extends FormRequest
                 'nullable',
                 Rule::in(
                     collect(MaintenanceStatus::cases())
-                        ->map(fn ($case) => $case->value)
+                        ->map(fn($case) => $case->value)
                         ->all()
                 ),
             ],
@@ -79,7 +92,7 @@ class GenerateReportRequest extends FormRequest
                 'nullable',
                 Rule::in(
                     collect(MaintenanceType::cases())
-                        ->map(fn ($case) => $case->value)
+                        ->map(fn($case) => $case->value)
                         ->all()
                 ),
             ],

@@ -9,11 +9,51 @@ use App\Models\Vehicle;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 
 class ReportService
 {
     public function generate(array $filters): array
     {
+        $recordReportTypes = [
+            'maintenance_work_photos',
+            'spare_parts_repair',
+        ];
+
+        // These two reports belong to exactly one maintenance record.
+        if (in_array($filters['report_type'], $recordReportTypes, true)) {
+            $record = MaintenanceRecord::query()
+                ->with([
+                    'vehicle',
+                    'recordDefects.assetDefect.defectType',
+                    'visits.technician',
+                    'visits.repairWorks.maintenanceParts',
+                    'visits.attachments',
+                    'attachments',
+                ])
+                ->findOrFail($filters['maintenance_record_id']);
+
+            $report = match ($filters['report_type']) {
+                'maintenance_work_photos' =>
+                    $this->maintenanceWorkPhotoReport($record),
+
+                'spare_parts_repair' =>
+                    $this->sparePartsRepairReport($record),
+            };
+
+            return [
+                ...$report,
+                'period_label' => $record->reported_at?->format('d M Y')
+                    ?? 'Not specified',
+                'vehicle_status_label' => $this->vehicleStatusLabel(''),
+                'generated_at' => now()->format('d M Y H:i A'),
+                'generated_by' => auth()->user()?->name ?? 'System',
+                'maintenance_record' => $record,
+                'report_number' => $this->reportNumber($record),
+            ];
+        }
+
+        // Original five reports retain their existing date filtering.
         [$from, $to] = $this->resolveDates($filters);
 
         $report = match ($filters['report_type']) {
@@ -584,5 +624,255 @@ class ReportService
         }
 
         return str($status)->replace('_', ' ')->title()->toString();
+    }
+
+    private function reportNumber(MaintenanceRecord $record): string
+    {
+        $year = $record->reported_at?->format('y')
+            ?? $record->created_at?->format('y')
+            ?? now()->format('y');
+
+        return 'TR' . $year . '-' . str_pad(
+            (string) $record->id,
+            3,
+            '0',
+            STR_PAD_LEFT
+        );
+    }
+
+    private function maintenanceWorkPhotoReport(
+        MaintenanceRecord $record
+    ): array {
+        $records = collect([
+            $record->load([
+                'vehicle',
+                'visits.technician',
+                'visits.repairWorks',
+                'visits.attachments',
+                'attachments',
+            ]),
+        ]);
+
+        $rows = [];
+        $photos = [];
+
+        foreach ($records as $record) {
+            $visits = $record->visits->sortBy('visit_number');
+
+            foreach ($visits as $visit) {
+                foreach ($visit->repairWorks as $work) {
+                    $rows[] = [
+                        $this->reportNumber($record),
+                        $record->vehicle?->vehicle_code,
+                        $record->vehicle?->name,
+                        $record->title,
+                        $visit->visit_number,
+                        $visit->technician?->name,
+                        $visit->started_at?->format('d-m-Y'),
+                        $work->work_description,
+                        $work->remarks,
+                        $visit->status,
+                    ];
+                }
+
+                foreach ($visit->attachments as $attachment) {
+                    if (
+                        !in_array(
+                            $attachment->attachment_type,
+                            ['before', 'during', 'after'],
+                            true
+                        )
+                    ) {
+                        continue;
+                    }
+
+                    $photos[] = [
+                        'report_number' => $this->reportNumber($record),
+                        'vehicle_code' => $record->vehicle?->vehicle_code,
+                        'vehicle_name' => $record->vehicle?->name,
+                        'visit_number' => $visit->visit_number,
+                        'technician' => $visit->technician?->name,
+                        'stage' => ucfirst($attachment->attachment_type),
+                        'file_name' => $attachment->file_name,
+                        'url' => Storage::disk('public')->url(
+                            $attachment->file_path
+                        ),
+                        'path' => Storage::disk('public')->exists(
+                            $attachment->file_path
+                        )
+                            ? Storage::disk('public')->path($attachment->file_path)
+                            : null,
+                    ];
+                }
+            }
+
+            // Include attachments stored directly against the maintenance record.
+            foreach ($record->attachments as $attachment) {
+                if (
+                    !in_array(
+                        $attachment->attachment_type,
+                        ['before', 'during', 'after'],
+                        true
+                    )
+                ) {
+                    continue;
+                }
+
+                $photos[] = [
+                    'report_number' => $this->reportNumber($record),
+                    'vehicle_code' => $record->vehicle?->vehicle_code,
+                    'vehicle_name' => $record->vehicle?->name,
+                    'visit_number' => null,
+                    'technician' => null,
+                    'stage' => ucfirst($attachment->attachment_type),
+                    'file_name' => $attachment->file_name,
+                    'url' => Storage::disk('public')->url(
+                        $attachment->file_path
+                    ),
+                    'path' => Storage::disk('public')->exists(
+                        $attachment->file_path
+                    )
+                        ? Storage::disk('public')->path($attachment->file_path)
+                        : null,
+                ];
+            }
+        }
+
+        return [
+            'report_type' => 'maintenance_work_photos',
+            'title' => 'របាយការណ៍ការងារថែទាំ និងរូបថតជាភស្តុតាង',
+            'subtitle' => 'Maintenance Work and Photo Evidence',
+            'headers' => [
+                'Report No.',
+                'Vehicle Code',
+                'Vehicle Name',
+                'Maintenance Title',
+                'Visit No.',
+                'Technician',
+                'Visit Date',
+                'Work Description',
+                'Remarks',
+                'Visit Status',
+            ],
+            'rows' => $rows,
+            'photos' => $photos,
+        ];
+    }
+
+    private function sparePartsRepairReport(
+        MaintenanceRecord $record
+    ): array {
+        $records = collect([
+            $record->load([
+                'vehicle',
+                'recordDefects.assetDefect.defectType',
+                'visits.technician',
+                'visits.repairWorks',
+                'visits.repairWorks.maintenanceParts',
+            ]),
+        ]);
+
+        $rows = [];
+
+        foreach ($records as $record) {
+            foreach ($record->visits as $visit) {
+                foreach ($visit->repairWorks as $work) {
+                    $recordDefect = $work->maintenanceRecordDefect;
+                    $defect = $recordDefect?->assetDefect;
+
+                    $parts = $work->maintenanceParts;
+
+                    // Keep one row per repair work when no part was used.
+                    if ($parts->isEmpty()) {
+                        $rows[] = [
+                            $this->reportNumber($record),
+                            $record->reported_at?->format('d-m-Y'),
+                            $record->vehicle?->vehicle_code,
+                            $record->vehicle?->name,
+                            $record->title,
+                            $defect?->defectType?->name,
+                            $defect?->title,
+                            $work->work_description,
+                            $visit->technician?->name,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            $work->remarks,
+                        ];
+
+                        continue;
+                    }
+
+                    foreach ($parts as $part) {
+                        $rows[] = [
+                            $this->reportNumber($record),
+                            $record->reported_at?->format('d-m-Y'),
+                            $record->vehicle?->vehicle_code,
+                            $record->vehicle?->name,
+                            $record->title,
+                            $defect?->defectType?->name,
+                            $defect?->title,
+                            $work->work_description,
+                            $visit->technician?->name,
+                            $part->part_code,
+                            $part->part_name,
+                            (float) $part->quantity,
+                            $part->unit,
+                            (float) $part->total_cost,
+                            $work->remarks,
+                        ];
+                    }
+                }
+            }
+        }
+
+        $totalPartsCost = collect($rows)->sum(
+            fn(array $row) => (float) ($row[13] ?? 0)
+        );
+
+        $rows[] = [
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            'TOTAL',
+            $totalPartsCost,
+            '',
+        ];
+
+        return [
+            'report_type' => 'spare_parts_repair',
+            'title' => 'របាយការណ៍គ្រឿងបន្លាស់ និងការងារជួសជុល',
+            'subtitle' => 'Spare Parts and Repair Work Report',
+            'headers' => [
+                'Report No.',
+                'Reported Date',
+                'Vehicle Code',
+                'Vehicle Name',
+                'Maintenance Title',
+                'Defect Type',
+                'Defect Description',
+                'Repair Work',
+                'Technician',
+                'Part Code',
+                'Part Name',
+                'Quantity',
+                'Unit',
+                'Parts Amount',
+                'Remarks',
+            ],
+            'rows' => $rows,
+            'total_parts_cost' => $totalPartsCost,
+        ];
     }
 }

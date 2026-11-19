@@ -112,6 +112,10 @@
                             Before Repair
                         </option>
 
+                        <option value="during">
+                            During Repair
+                        </option>
+
                         <option value="after">
                             After Repair
                         </option>

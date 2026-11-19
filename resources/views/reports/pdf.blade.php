@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="km">
 
 <head>
     <meta charset="UTF-8">
@@ -10,8 +10,22 @@
             margin: 28px 25px 42px;
         }
 
+        @font-face {
+            font-family: 'NotoSansKhmer';
+            font-style: normal;
+            font-weight: 400;
+            src: url('{{ storage_path("fonts/NotoSansKhmer-Regular.ttf") }}') format('truetype');
+        }
+
+        @font-face {
+            font-family: 'NotoSansKhmer';
+            font-style: normal;
+            font-weight: 700;
+            src: url('{{ storage_path("fonts/NotoSansKhmer-Bold.ttf") }}') format('truetype');
+        }
+
         body {
-            font-family: DejaVu Sans, sans-serif;
+            font-family: 'NotoSansKhmer', DejaVu Sans, sans-serif;
             font-size: 9px;
             color: #1f2937;
             line-height: 1.45;
@@ -229,6 +243,47 @@
             @endforelse
         </tbody>
     </table>
+
+    @if (($report['report_type'] ?? '') === 'maintenance_work_photos')
+        <div class="section-title" style="margin-top: 20px;">
+            រូបថតជាភស្តុតាងការងារថែទាំ
+        </div>
+
+        @forelse ($report['photos'] ?? [] as $photo)
+            <div style="
+                                    display: inline-block;
+                                    width: 30%;
+                                    margin: 1%;
+                                    vertical-align: top;
+                                    text-align: center;
+                                    page-break-inside: avoid;
+                                ">
+                @if (!empty($photo['path']) && file_exists($photo['path']))
+                    <img src="{{ $photo['path'] }}" style="width: 100%; height: 130px; object-fit: contain;">
+                @else
+                    <div style="
+                                                        height: 100px;
+                                                        border: 1px solid #d1d5db;
+                                                        padding: 10px;
+                                                    ">
+                        Image unavailable
+                    </div>
+                @endif
+
+                <p>
+                    <strong>{{ $photo['stage'] }}</strong><br>
+                    {{ $photo['vehicle_code'] }}
+                    @if (!empty($photo['visit_number']))
+                        — Visit {{ $photo['visit_number'] }}
+                    @endif
+                    <br>
+                    {{ $photo['file_name'] }}
+                </p>
+            </div>
+        @empty
+            <p>No before, during, or after photos were uploaded.</p>
+        @endforelse
+    @endif
 
     {{-- Footer --}}
     <div class="footer">

@@ -38,7 +38,7 @@
         | We use the stored cost as the final authoritative value.
         */
 
-        $totalCost = (float) ($maintenance->cost ?? 0);
+        $totalCost = $partsTotal + $laborCost + $otherCost;
 
         /* Workflow */
 

@@ -61,11 +61,42 @@
                             <option value="maintenance_cost" @selected(old('report_type') === 'maintenance_cost')>
                                 Maintenance Cost Report
                             </option>
+                            <option value="maintenance_work_photos">
+                                របាយការណ៍ការងារថែទាំ និងរូបថតជាភស្តុតាង
+                            </option>
+
+                            <option value="spare_parts_repair">
+                                របាយការណ៍គ្រឿងបន្លាស់ និងការងារជួសជុល
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Maintenance Record Selector -->
+                    <div id="maintenance-record-filter" class="hidden">
+                        <label for="maintenance_record_id" class="mb-2 block text-sm font-medium text-gray-700">
+                            Select Maintenance Record
+                        </label>
+
+                        <select name="maintenance_record_id" id="maintenance_record_id"
+                            class="w-full rounded-lg border border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500 px-3 py-2">
+                            <option value="">Select a maintenance record</option>
+
+                            @foreach ($maintenanceRecordsList as $record)
+                                <option value="{{ $record->id }}">
+                                    TR{{ $record->reported_at?->format('y') ?? $record->created_at?->format('y') }}-{{ str_pad($record->id, 3, '0', STR_PAD_LEFT) }}
+                                    —
+                                    {{ $record->vehicle?->vehicle_code }}
+                                    —
+                                    {{ $record->vehicle?->name }}
+                                    —
+                                    {{ $record->title }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
 
                     {{-- Date Period --}}
-                    <div>
+                    <div id="date-range-filter">
                         <label for="export_period" class="mb-1 block text-sm font-medium text-gray-700">
                             Date Range
                         </label>
@@ -103,7 +134,7 @@
                     </div>
 
                     {{-- Vehicle Status --}}
-                    <div>
+                    <div id="vehicle-status-filter">
                         <label for="export_vehicle_status" class="mb-1 block text-sm font-medium text-gray-700">
                             Vehicle Status
                         </label>
@@ -125,18 +156,18 @@
                     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         {{-- Export Excel --}}
                         <button type="submit" formaction="{{ route('reports.excel') }}" class="inline-flex w-full items-center justify-center gap-2 rounded-lg
-                       bg-gray-900 px-4 py-2.5 text-sm font-medium text-white
-                       transition hover:bg-gray-700 focus:outline-none
-                       focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                                       bg-gray-900 px-4 py-2.5 text-sm font-medium text-white
+                                       transition hover:bg-gray-700 focus:outline-none
+                                       focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
                             <icon name="file-spreadsheet" />
                             Export Excel
                         </button>
 
                         {{-- Export PDF --}}
                         <button type="submit" formaction="{{ route('reports.pdf') }}" class="inline-flex w-full items-center justify-center gap-2 rounded-lg
-                       bg-red-600 px-4 py-2.5 text-sm font-medium text-white
-                       transition hover:bg-red-700 focus:outline-none
-                       focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                                       bg-red-600 px-4 py-2.5 text-sm font-medium text-white
+                                       transition hover:bg-red-700 focus:outline-none
+                                       focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
                             <icon name="file-text" />
                             Export PDF
                         </button>
@@ -193,7 +224,7 @@
 
                         <select id="period" name="period"
                             class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
-                                                                   focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200">
+                                                                                   focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200">
                             <option value="all" @selected(request('period', 'all') === 'all')>All Dates</option>
                             <option value="today" @selected(request('period') === 'today')>Today</option>
                             <option value="yesterday" @selected(request('period') === 'yesterday')>Yesterday</option>
@@ -217,7 +248,7 @@
                                 <input id="from" name="from" type="date" value="{{ request('from', $from ?? '') }}"
                                     max="{{ request('to', $to ?? '') }}"
                                     class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
-                                                                           focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200">
+                                                                                           focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200">
                             </div>
 
                             <div>
@@ -228,7 +259,7 @@
                                 <input id="to" name="to" type="date" value="{{ request('to', $to ?? '') }}"
                                     min="{{ request('from', $from ?? '') }}"
                                     class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
-                                                                           focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200">
+                                                                                           focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200">
                             </div>
                         </div>
                     </div>
@@ -241,7 +272,7 @@
 
                         <select id="status" name="status"
                             class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
-                                                                   focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200">
+                                                                                   focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200">
                             <option value="">All Statuses</option>
 
                             @foreach($statuses as $item)
@@ -260,7 +291,7 @@
 
                         <select id="type" name="type"
                             class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
-                                                                   focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200">
+                                                                                   focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200">
                             <option value="">All Types</option>
 
                             @foreach($types as $item)
@@ -274,16 +305,16 @@
                     {{-- Buttons --}}
                     <div class="flex items-end justify-end gap-2">
                         <button type="submit" class="w-24 rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white
-                                           transition-colors hover:bg-gray-700
-                                           focus:outline-none">
+                                                           transition-colors hover:bg-gray-700
+                                                           focus:outline-none">
                             Search
                         </button>
 
                         <a id="schedule-clear-link" href="{{ route('reports.index') }}" class="{{ request()->hasAny(['search', 'status', 'due_status']) ? '' : 'hidden' }}
-                                       shrink-0 rounded-lg border border-gray-300 px-4 py-2
-                                       text-sm font-medium text-gray-700 transition-colors
-                                       hover:border-gray-400 hover:bg-gray-100 hover:text-gray-900
-                                       focus:outline-none">
+                                                       shrink-0 rounded-lg border border-gray-300 px-4 py-2
+                                                       text-sm font-medium text-gray-700 transition-colors
+                                                       hover:border-gray-400 hover:bg-gray-100 hover:text-gray-900
+                                                       focus:outline-none">
                             Clear
                         </a>
 
@@ -659,7 +690,7 @@
                                             class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold {{ $statusClasses }}">
                                             {{ str($status)->replace('_', ' ')->title() }}
                                         </span>
-                                       
+
                                     </td>
 
                                     <td class="px-6 py-4 text-right font-medium text-gray-900">
@@ -869,5 +900,31 @@
             updateExportDateFields();
         }
 
+        //4. Maintenance Selection
+        const reportType = document.getElementById('report_type');
+
+        const dateFilters = document.getElementById('date-range-filter');
+        const otherFilters = document.getElementById('vehicle-status-filter');
+        const recordFilter = document.getElementById('maintenance-record-filter');
+
+        const recordTypes = [
+            'maintenance_work_photos',
+            'spare_parts_repair'
+        ];
+
+        function updateReportFilters() {
+            const isRecordReport = recordTypes.includes(reportType.value);
+
+            dateFilters.classList.toggle('hidden', isRecordReport);
+            otherFilters.classList.toggle('hidden', isRecordReport);
+            recordFilter.classList.toggle('hidden', !isRecordReport);
+        }
+
+        reportType.addEventListener('change', updateReportFilters);
+
+        // Also handle the initial page load.
+        updateReportFilters();
     });
+
+
 </script>
