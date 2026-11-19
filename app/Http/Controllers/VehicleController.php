@@ -73,6 +73,7 @@ class VehicleController extends Controller
     public function show(Vehicle $vehicle): View
     {
         $vehicle->load([
+            'attachments',
             'maintenanceRecords' => function ($query) {
                 $query->latest('reported_at');
             },
@@ -87,6 +88,8 @@ class VehicleController extends Controller
 
     public function edit(Vehicle $vehicle): View
     {
+        $vehicle->load('attachments');
+
         return view('vehicles.edit', [
             'vehicle' => $vehicle,
             'statuses' => VehicleStatus::cases(),

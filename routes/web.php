@@ -15,6 +15,7 @@ use App\Http\Controllers\DefectTypeController;
 use App\Http\Controllers\MaintenanceRepairWorkController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PartController;
+use App\Http\Controllers\VehicleAttachmentController;
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
@@ -165,8 +166,17 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
             Route::patch('/users/{user}/status', [UserManagementController::class, 'toggleActive'])
                 ->name('users.toggle-active');
         });
-});
+    Route::post(
+        '/vehicles/{vehicle}/attachments',
+        [VehicleAttachmentController::class, 'store']
+    )->name('vehicles.attachments.store');
 
+    Route::delete(
+        '/vehicles/{vehicle}/attachments/{attachment}',
+        [VehicleAttachmentController::class, 'destroy']
+    )->name('vehicles.attachments.destroy');
+
+});
 Route::middleware(['auth', 'role:admin,staff'])->group(function () {
 
     Route::resource('vehicles', VehicleController::class)

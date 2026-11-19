@@ -75,4 +75,9 @@ class Vehicle extends Model
     {
         return $this->hasMany(AssetDefect::class);
     }
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(VehicleAttachment::class);
+    }
 }
